@@ -7,6 +7,7 @@ from packages.matter_power_spectrum.helper_functions import I_and_J_integral_fun
 
 #config files
 from config.config_cosmology import cosmo
+rho_m_0 = cosmo.rho_m(z=0) * 1e9 #convert from 1/kpc^3 to 1/Mpc^3
 
 
 def S_I(config, k):
@@ -21,9 +22,8 @@ def S_I(config, k):
 
         M_parent = np.exp(lnM_parent)
 
-        rho_m = cosmo.rho_m(z) * 1e9 #convert from 1/kpc^3 to 1/Mpc^3
         n = lss.halo_mass_function(config, M_parent)
-        first_term = M_parent/rho_m * n * lss.halo_bias(config, M_parent)
+        first_term = M_parent/rho_m_0 * n * lss.halo_bias(config, M_parent)
 
         M_smooth = (1 - f_sub(M_parent)) * M_parent
         u_smooth = halo.smooth_profile(config, k, M=M_smooth)
@@ -47,9 +47,8 @@ def C_I(config, k):
     def M_integrand(lnM_parent):
         M_parent = np.exp(lnM_parent)
 
-        rho_m = cosmo.rho_m(z) * 1e9 #convert from 1/kpc^3 to 1/Mpc^3
         n = lss.halo_mass_function(config, M_parent)
-        first_term = M_parent/rho_m * n * lss.halo_bias(config, M_parent)
+        first_term = M_parent/rho_m_0 * n * lss.halo_bias(config, M_parent)
 
         M_smooth = (1 - f_sub(M_parent)) * M_parent
         U = halo.clump_distribution(config, k, M=M_smooth)

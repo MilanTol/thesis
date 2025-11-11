@@ -7,7 +7,7 @@ from .helper_functions import I_and_J_integral_functions_interpolated as I_and_J
 
 #config files
 from config.config_cosmology import cosmo
-
+rho_m_0 = cosmo.rho_m(z=0) * 1e9 #convert from 1/kpc^3 to 1/Mpc^3
 
 def P_1h_ss(config, k):
     """Smooth-smooth component for the 1-halo term. See eq. (25) Giocoli et al..
@@ -24,9 +24,8 @@ def P_1h_ss(config, k):
 
         M_parent = np.exp(ln_M_parent)
 
-        rho_m = cosmo.rho_m(z) * 1e9 #convert from 1/kpc^3 to 1/Mpc^3
         n = lss.halo_mass_function(config, M_parent)
-        first_term = (M_parent / rho_m)**2 * n
+        first_term = (M_parent / rho_m_0)**2 * n
 
         M_smooth = (1 - f_sub(M_parent)) * M_parent 
         u_smooth = halo.smooth_profile(config, k, M=M_smooth)
@@ -56,9 +55,8 @@ def P_1h_sc(config, k):
 
         M_parent = np.exp(ln_M_parent) 
 
-        rho_m = cosmo.rho_m(z) * 1e9 #convert from 1/kpc^3 to 1/Mpc^3 
         n = lss.halo_mass_function(config, M_parent)
-        first_term = 2 * (M_parent/rho_m)**2 * n
+        first_term = 2 * (M_parent/rho_m_0)**2 * n
 
         M_smooth = (1 - f_sub(M_parent)) * M_parent  # Smooth mass component
         second_term = M_smooth / M_parent * halo.smooth_profile(config, k, M=M_smooth)
@@ -88,9 +86,8 @@ def P_1h_self_c(config, k):
 
         M_parent = np.exp(ln_M_parent)
 
-        rho_m = cosmo.rho_m(z) * 1e9 #convert from 1/kpc^3 to 1/Mpc^3 
         n = lss.halo_mass_function(config, M_parent)
-        first_term = (M_parent/rho_m)**2 * n
+        first_term = (M_parent/rho_m_0)**2 * n
 
         J_c_val = Jc((k, M_parent))
         second_term = J_c_val
@@ -117,9 +114,8 @@ def P_1h_cc(config, k):
 
         M_parent = np.exp(ln_M_parent)
 
-        rho_m = cosmo.rho_m(z) * 1e9 #convert from 1/kpc^3 to 1/Mpc^3 
         n = lss.halo_mass_function(config, M_parent)
-        first_term = (M_parent/rho_m)**2 * n
+        first_term = (M_parent/rho_m_0)**2 * n
 
         Ic_val = Ic((k, M_parent))
         second_term = halo.clump_distribution(config, k, M_parent)**2 * Ic_val**2
