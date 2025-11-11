@@ -1,0 +1,10 @@
+Delta_vir: 200
+M_max: 1.0e+16
+M_min: 100000000.0
+N_M: 60
+N_k: 40
+d_vir: 1
+k_max: 10000.0
+k_min: 0.001
+m_min: 1.0
+z: 0.1

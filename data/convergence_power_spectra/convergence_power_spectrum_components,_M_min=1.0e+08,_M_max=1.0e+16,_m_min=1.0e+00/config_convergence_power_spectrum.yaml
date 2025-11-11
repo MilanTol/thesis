@@ -1,0 +1,16 @@
+Delta_vir: 200
+M_max: 1e16
+M_min: 1e8
+N_M: 60
+N_k: 40
+N_l: 80
+N_z: 6
+d_vir: 1
+k_max: 1e4
+k_min: 1e-3
+l_max: 1e6
+l_min: 10
+m_min: 1
+z_max: 0.5
+z_min: 0
+z_sources: 0.5
