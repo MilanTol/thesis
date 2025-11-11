@@ -75,7 +75,7 @@ def interpolate_f_sub():
     #communicate current task
     print("interpolating f_sub function...")
 
-    with open('/home/milan/Desktop/thesis/code/config_matter_power_spectrum.yaml') as cf_file:
+    with open('/home/milan/Desktop/thesis/code/config/config_matter_power_spectrum.yaml') as cf_file:
         config = yaml.safe_load( cf_file.read() )
 
     M_min = float(config['M_min'])

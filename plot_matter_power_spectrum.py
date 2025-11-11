@@ -3,7 +3,7 @@ import numpy as np
 import yaml
 import matplotlib.pyplot as plt
 
-with open('/home/milan/Desktop/thesis/code/config_matter_power_spectrum.yaml') as file:
+with open('/home/milan/Desktop/thesis/code/config/config_matter_power_spectrum.yaml') as file:
     config_matter = yaml.safe_load(file.read())
 
 z = float(config_matter['z'])

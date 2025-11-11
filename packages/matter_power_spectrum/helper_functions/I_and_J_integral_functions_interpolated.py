@@ -20,7 +20,7 @@ def update_values():
     global M_max
     global compute_point
 
-    with open('/home/milan/Desktop/thesis/code/config_matter_power_spectrum.yaml') as cf_file:
+    with open('/home/milan/Desktop/thesis/code/config/config_matter_power_spectrum.yaml') as cf_file:
         config = yaml.safe_load( cf_file.read() )
 
     k_min = float(config['k_min'])

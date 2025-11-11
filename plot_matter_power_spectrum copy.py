@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from config.config_cosmology import cosmo
 
 
-with open('/home/milan/Desktop/thesis/code/config_matter_power_spectrum.yaml') as file:
+with open('/home/milan/Desktop/thesis/code/config/config_matter_power_spectrum.yaml') as file:
     config_matter = yaml.safe_load(file.read())
 
 z = float(config_matter['z'])

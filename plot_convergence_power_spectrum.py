@@ -3,7 +3,7 @@ import numpy as np
 import yaml
 import matplotlib.pyplot as plt
 
-with open('/home/milan/Desktop/thesis/code/config_convergence_power_spectrum.yaml') as file:
+with open('/home/milan/Desktop/thesis/code/config/config_convergence_power_spectrum.yaml') as file:
     config_convergence = yaml.safe_load(file.read())
 
 M_min = float(config_convergence['M_min'])

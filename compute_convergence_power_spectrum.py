@@ -14,7 +14,7 @@ from packages.matter_power_spectrum import helper_functions
 #
 
 #Load in configuration file for convergence_power_spectrum
-with open('/home/milan/Desktop/thesis/code/config_convergence_power_spectrum.yaml') as file:
+with open('/home/milan/Desktop/thesis/code/config/config_convergence_power_spectrum.yaml') as file:
     config_convergence = yaml.safe_load(file.read())
 
 #Create z_linspace, containing the various redshift values
@@ -27,7 +27,7 @@ z_linspace = np.linspace(z_min, z_max, N_z)
 for z in z_linspace:
 
     #open the matter power spectrum config file
-    with open('/home/milan/Desktop/thesis/code/config_matter_power_spectrum.yaml') as file:
+    with open('/home/milan/Desktop/thesis/code/config/config_matter_power_spectrum.yaml') as file:
         config_matter = yaml.safe_load(file.read())
 
     #load in values from matter config file
@@ -50,7 +50,7 @@ for z in z_linspace:
     config_matter['m_min'] = float(m_min)
 
     # Save the updated values in config_matter file
-    with open('/home/milan/Desktop/thesis/code/config_matter_power_spectrum.yaml', 'w') as file:
+    with open('/home/milan/Desktop/thesis/code/config/config_matter_power_spectrum.yaml', 'w') as file:
         yaml.dump(config_matter, file)
 
     #change cwd to data directory and store folder_name
