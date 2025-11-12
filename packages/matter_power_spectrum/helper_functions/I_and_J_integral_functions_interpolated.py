@@ -16,8 +16,10 @@ def update_values():
     """
     global k_min
     global k_max
+    global N_k
     global M_min
     global M_max
+    global N_M
     global compute_point
 
     with open('/home/milan/Desktop/thesis/code/config/config_matter_power_spectrum.yaml') as cf_file:
@@ -25,8 +27,10 @@ def update_values():
 
     k_min = float(config['k_min'])
     k_max = float(config['k_max'])
+    N_k = float(config['N_k'])
     M_min = float(config['M_min'])
     M_max = float(config['M_max'])
+    N_M = float(config['N_M'])
 
     # Worker function to compute both Ic and Jc for one (k, M)
     def compute_point(k, M):
