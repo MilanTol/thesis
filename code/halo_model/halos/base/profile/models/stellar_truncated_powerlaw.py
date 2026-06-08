@@ -3,7 +3,7 @@ from .....config.config import Config
 from ...mass_converter import NFWMassConverter
 from ...r_vir.models.SO import R_virSO
 from ...concentration.concentration import Concentration
-from .....algorithms.fourier import fourier
+from .....algorithms.fourier import fourier, get_k_grid
 
 import numpy as np
 
@@ -24,45 +24,36 @@ class ProfileStellarTruncatedPowerLaw(Profile):
     def __init__(self, cfg: Config, c: Concentration):
         self.cfg = cfg
         self.c = c
-
-        print("Computing Fourier transform of stellar profile...")
-
-        k_grid = np.geomspace(cfg.k_min, cfg.k_max, cfg.N_k)
-        M_grid = np.geomspace(cfg.M_min, cfg.M_max, 16)
-
+        
+        R200_mid = self.R200(1e12, cfg.z)
+        R_h_mid  = cfg.r_h * R200_mid
+        rmin = 1e-4 * R_h_mid
+        rmax = 1e2 * R_h_mid   
+        Nr   = 512
+        
+        M_grid = np.geomspace(cfg.M_min, cfg.M_max, 32)
+        k_grid = get_k_grid(rmin, rmax, Nr)
         fourier_grid = np.zeros((len(M_grid), len(k_grid)))
-
+                
         def compute_row(args):
             i, M = args
-            rho_stellar = lambda r: self.real(cfg.cosmo, r, M, cfg.z)
-            r_vir = R_virSO(cfg)(cfg.cosmo, M, cfg.z)
-            vals = []
-            for k in k_grid:
-                if k > 1e2:
-                    N_r = 128
-                else:
-                    N_r = 32
-                vals.append(fourier(k, rho_stellar, rmin=1e-4, rmax=1e-1, N_r=N_r +1))
-            vals = np.array(vals)
-            return i, vals / vals[0]
-
+            rho_r = lambda r: self.real(cfg.cosmo, r, M, cfg.z)
+            k, Fk = fourier(rho_r, rmin, rmax, Nr)
+            return i, Fk
+            
         with ThreadPoolExecutor() as ex:
             for i, vals in ex.map(compute_row, enumerate(M_grid)):
                 fourier_grid[i] = vals
 
-        log_fourier = np.log(np.clip(fourier_grid, 1e-5, 1))
-
         self._interp_2d = RegularGridInterpolator(
             (np.log(M_grid), np.log(k_grid)),
-            log_fourier,
+            fourier_grid,
             method='cubic',
             bounds_error=False,
             fill_value=None,
         )
-        
-        # store bounds for to avoid extrapolation
+        self._log_k_bounds = (np.log(k_grid[0]), np.log(k_grid[-1]))
         self._log_M_bounds = (np.log(M_grid[0]),  np.log(M_grid[-1]))
-        self._log_k_bounds = (np.log(k_grid[0]),  np.log(k_grid[-1]))
         
 
     def _fourier(self, cosmo, k, M, z, **kwargs):
@@ -74,17 +65,19 @@ class ProfileStellarTruncatedPowerLaw(Profile):
             
         k = np.atleast_1d(np.asarray(k, dtype=float))
 
-        log_k = np.clip(np.log(k), *self._log_k_bounds)
-        log_M = np.clip(np.log(M), *self._log_M_bounds)
+        log_k = np.log(k)
+        log_M = np.log(M)
 
         pts = np.column_stack([
             np.full_like(log_k, log_M),
             log_k
         ])
 
-        result = np.exp(self._interp_2d(pts))
-        
-        return result if result.shape[0] > 1 else float(result[0])
+        result = self._interp_2d(pts)
+        result = self._interp_2d(pts)
+        result = np.where(log_k < self._log_k_bounds[0], 1.0, result)
+        result = np.where(log_k > self._log_k_bounds[1], 0.0, result)
+        return float(result[0]) if result.shape[0] == 1 else result
         
         
         
