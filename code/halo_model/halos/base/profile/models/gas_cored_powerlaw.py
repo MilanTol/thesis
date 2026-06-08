@@ -30,7 +30,7 @@ class ProfileGasCoredPowerLaw(Profile):
         self._shmr = shmr
         self.c = c
 
-        rmin, rmax, Nr = 1e-4, 1e2, 512
+        rmin, rmax, Nr = 1e-4, 1e3, 512
         self.M_gaslimit = 10**(cfg.logM_gaslimit)
         M_grid = np.geomspace(self.M_gaslimit, cfg.M_max, 32)
         k_grid = get_k_grid(rmin, rmax, Nr)
@@ -40,7 +40,7 @@ class ProfileGasCoredPowerLaw(Profile):
             i, M = args
             rho_r = lambda r: self.real(cfg.cosmo, r, M, cfg.z)
             k, Fk = fourier(rho_r, rmin, rmax, Nr)
-            return i, Fk/Fk[0]
+            return i, Fk
             
         with ThreadPoolExecutor() as ex:
             for i, vals in ex.map(compute_row, enumerate(M_grid)):
@@ -74,7 +74,7 @@ class ProfileGasCoredPowerLaw(Profile):
             log_k
         ])
 
-        result = np.exp(self._interp_2d(pts))
+        result = self._interp_2d(pts)
         return result if result.shape[0] > 1 else float(result[0])
     
     

@@ -27,7 +27,9 @@ def fourier(
     transform = mcfit.SphericalBessel(r_grid, q=q, lowring=True)
     k, Fk = transform(f_r, extrap=True)
     # correct normalization factor
-    Fk = 4 * np.pi * np.sqrt(np.pi / 2) * Fk  
+    Fk = Fk / Fk[0] 
+    
+    print(Fk[0])
     
     return k, Fk
 
