@@ -5,7 +5,7 @@ from ...mass_converter import NFWMassConverter
 from ...r_vir.models.SO import R_virSO
 from ...concentration.concentration import Concentration
 
-from .....algorithms.fourier import fourier
+from .....algorithms.fourier import fourier, get_k_grid
 
 from scipy.integrate import romb
 from scipy.interpolate import RegularGridInterpolator
@@ -30,60 +30,30 @@ class ProfileGasCoredPowerLaw(Profile):
         self._shmr = shmr
         self.c = c
 
-        print("Computing Fourier transform of gas profile...")
-
-        k_grid = np.geomspace(cfg.k_min, cfg.k_max, cfg.N_k)
+        rmin, rmax, Nr = 1e-4, 1e2, 512
         self.M_gaslimit = 10**(cfg.logM_gaslimit)
         M_grid = np.geomspace(self.M_gaslimit, cfg.M_max, 32)
-        
-        file_name = Path(
-            f"/home/milan/Desktop/thesis/code/halo_model/halos/base/profile/models/gas_profile_fourier_grids/fourier_grid_{cfg.theta_ej}_{cfg.gamma}_{cfg.delta}_{cfg.logM_gaslimit}_{cfg.z}_{cfg.k_min}_{cfg.k_max}_{cfg.N_k}.npy"
-        )       
-         
-        if file_name.exists():
-            fourier_grid = np.load(file_name)
-        
-        else:
-            fourier_grid = np.zeros((len(M_grid), len(k_grid)))
-
-            def compute_row(args):
-                i, M = args
-                rho_gas = lambda r: self.real(cfg.cosmo, r, M, cfg.z)
-                r_vir = R_virSO(cfg)(cfg.cosmo, M, cfg.z)
-                vals = []
-                for k in k_grid:
-                    if k > 1:
-                        N_r = 256
-                    else:
-                        N_r = 32
-                        
-                    vals.append(fourier(k, rho_gas, rmin=1e-3, rmax=1e1, N_r=N_r +1))
-                vals = np.array(vals)
-                return i, vals / vals[0]
-
-            with ThreadPoolExecutor() as ex:
-                for i, vals in ex.map(compute_row, enumerate(M_grid)):
-                    fourier_grid[i] = vals
-                    
-            np.save(
-                file_name,
-                fourier_grid,
-            )
-
-        log_fourier = np.log(np.clip(fourier_grid, 1e-5, 1))
+        k_grid = get_k_grid(rmin, rmax, Nr)
+        fourier_grid = np.zeros((len(M_grid), len(k_grid)))
+                
+        def compute_row(args):
+            i, M = args
+            rho_r = lambda r: self.real(cfg.cosmo, r, M, cfg.z)
+            k, Fk = fourier(rho_r, rmin, rmax, Nr)
+            return i, Fk/Fk[0]
+            
+        with ThreadPoolExecutor() as ex:
+            for i, vals in ex.map(compute_row, enumerate(M_grid)):
+                fourier_grid[i] = vals
 
         self._interp_2d = RegularGridInterpolator(
             (np.log(M_grid), np.log(k_grid)),
-            log_fourier,
+            fourier_grid,
             method='cubic',
             bounds_error=False,
             fill_value=None,
         )
-        
-        # store bounds for to avoid extrapolation
-        self._log_M_bounds = (np.log(M_grid[0]),  np.log(M_grid[-1]))
-        self._log_k_bounds = (np.log(k_grid[0]),  np.log(k_grid[-1]))
-        
+                   
 
     def _fourier(self, cosmo, k, M, z, **kwargs):
         
@@ -96,8 +66,8 @@ class ProfileGasCoredPowerLaw(Profile):
         
         k = np.atleast_1d(np.asarray(k, dtype=float))
 
-        log_k = np.clip(np.log(k), *self._log_k_bounds)
-        log_M = np.clip(np.log(M), *self._log_M_bounds)
+        log_k = np.log(k)
+        log_M = np.log(M)
 
         pts = np.column_stack([
             np.full_like(log_k, log_M),

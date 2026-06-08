@@ -31,3 +31,11 @@ def fourier(
     
     return k, Fk
 
+
+def get_k_grid(rmin, rmax, Nr):
+    """Get the k grid that mcfit will produce for a given r grid."""
+    r_grid = np.geomspace(rmin, rmax, Nr)
+    dummy = np.ones(Nr)  # profile values don't matter for k grid
+    transform = mcfit.SphericalBessel(r_grid, q=1.5, lowring=True)
+    k, _ = transform(dummy, extrap=True)
+    return k
