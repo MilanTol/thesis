@@ -60,5 +60,5 @@ class SHMRMoster2013Centrals(SHMR):
         M1 = 10**logM1
         M1_inv = 1/M1
         f_star = 2*N / ( (M*M1_inv)**(-beta) + (M*M1_inv)**(gamma) )
-        return f_star
+        return self.cfg.S*f_star
     

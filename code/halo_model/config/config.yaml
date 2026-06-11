@@ -9,7 +9,6 @@ M_min: 1e8
 M_max: 1e16
 N_M: 64 #power of 2
 
-logM_gaslimit: 10
 
 k_min: 1e-1
 k_max: 1e4
@@ -24,15 +23,18 @@ massdef: "200c" # !! SHOULD LEAVE THIS BY DEFAULT ON 200m
 Q: 1
 
 # Gas profile
-theta_ej: 6
+theta_ej: 3
 delta: 8
-gamma: 2
+gamma: 3
+mu: 1
+logM_c: 13.2
+logM_gaslimit: 10
 
 # Stellar profile
 r_h: 0.015 # radius of galaxies times r200
 
 # SHMR
-S: 1 #factor before stellar fraction
+S: 1.8 #factor before stellar fraction # THIS DOESNT WORK YET POWER GETS TAKEN AWAY AT LARGE SCALES
 
 # config convergence power spectrum
 z_min: 0

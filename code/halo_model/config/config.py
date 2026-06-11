@@ -23,7 +23,6 @@ class Config:
         self.k_max      = float(config['k_max'])
         self.N_k        = int(config['N_k'])
         self.massdef    = config['massdef']
-        self.logM_gaslimit = float(config['logM_gaslimit'])
         
         # clump concentration
         self.Q          = float(config['Q'])
@@ -32,6 +31,9 @@ class Config:
         self.theta_ej   = float(config['theta_ej'])
         self.delta      = float(config['delta'])
         self.gamma      = float(config['gamma'])
+        self.mu         = float(config['mu'])
+        self.logM_c     = float(config['logM_c'])
+        self.logM_gaslimit = float(config['logM_gaslimit'])
         
         # Stellar profile
         self.r_h        = float(config['r_h'])

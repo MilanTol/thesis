@@ -86,8 +86,8 @@ class ProfileGasCoredPowerLaw(Profile):
         
     def beta(self, M200):
         # See Table 1 Siegel et al. 2025
-        M_c = 10**13.6
-        mu = 0.9
+        M_c = 10**self.cfg.logM_c
+        mu = self.cfg.mu
         m = M200 / M_c
         return 3*m**mu / (1 + m**mu)    
         
