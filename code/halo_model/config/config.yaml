@@ -2,10 +2,10 @@
 #config matter power spectrum
 z: 0
 
-m_min: 1e2
+m_min: 1
 N_m: 64 #power of 2
 
-M_min: 1e8
+M_min: 1e6
 M_max: 1e16
 N_M: 64 #power of 2
 
@@ -23,7 +23,7 @@ massdef: "200c" # !! SHOULD LEAVE THIS BY DEFAULT ON 200m
 Q: 1
 
 # Gas profile
-theta_ej: 3
+theta_ej: 6
 delta: 8
 gamma: 3
 mu: 1

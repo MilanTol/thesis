@@ -1,4 +1,6 @@
 *.fits
+*.pdf
+*.csv
 
 # Python bytecode / cache
 __pycache__/
