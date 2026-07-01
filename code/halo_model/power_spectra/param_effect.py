@@ -17,7 +17,7 @@ from halo_model.halos.base.clump_mass_func.clump_mass_func import ClumpMassFunc
 from halo_model.halos.base.concentration.models.neto2007 import ConcentrationNeto2007
 from halo_model.halos.base.concentration.models.scaled import ConcentrationScaled
 
-from halo_model.halos.base.mass_func.models.tinker2008 import MassFuncTinker2008
+from halo_model.halos.base.mass_func.models.tinker2008_mod import MassFuncTinker2008_mod
 
 from halo_model.halos.base.profile.models.nfw import ProfileNFW
 from halo_model.halos.base.profile.models.stellar_truncated_powerlaw import ProfileStellarTruncatedPowerLaw
@@ -40,7 +40,7 @@ def compute_Pk(cfg: Config):
     # define model objects
     c_smooth = ConcentrationNeto2007(cfg)
     c_clump = ConcentrationScaled(cfg, c_smooth)
-    mass_func = MassFuncTinker2008(cfg)
+    mass_func = MassFuncTinker2008_mod(cfg)
     shmr = SHMRMoster2013(cfg, c_smooth)
     shmr_central = SHMRMoster2013Centrals(cfg, c_smooth)
     smooth_profile_dm = ProfileNFW(c_smooth, R_virSO(cfg))

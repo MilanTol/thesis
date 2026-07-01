@@ -5,7 +5,7 @@ z: 0
 m_min: 1
 N_m: 64 #power of 2
 
-M_min: 1e6
+M_min: 1
 M_max: 1e16
 N_M: 64 #power of 2
 
@@ -59,7 +59,8 @@ cosmo_params:
   ns: 0.972
 
 # halo mass function parameters
-M0: 2e9
+# these are not functional
+M0: 2e9 
 alpha: 0
 
 #clump mass function parameters

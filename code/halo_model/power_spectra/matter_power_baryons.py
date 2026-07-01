@@ -276,22 +276,24 @@ class MatterPowerBaryons:
         return prefactor * romb(ys, dx)
 
 
-    def P_2h_ss(self, k):
-        cfg = self.cfg
-        return cfg.cosmo.matterPowerSpectrum(k, cfg.z) * self.S_I(k)**2
+    # def P_2h_ss(self, k):
+    #     cfg = self.cfg
+    #     return cfg.cosmo.matterPowerSpectrum(k, cfg.z) * self.S_I(k)**2
 
 
-    def P_2h_sc(self, k):
-        cfg = self.cfg
-        return 2*cfg.cosmo.matterPowerSpectrum(k, cfg.z) * self.S_I(k)*self.C_I(k)
+    # def P_2h_sc(self, k):
+    #     cfg = self.cfg
+    #     return 2*cfg.cosmo.matterPowerSpectrum(k, cfg.z) * self.S_I(k)*self.C_I(k)
 
 
-    def P_2h_cc(self, k):
-        cfg = self.cfg
-        return cfg.cosmo.matterPowerSpectrum(k, cfg.z) *self.C_I(k)**2
+    # def P_2h_cc(self, k):
+    #     cfg = self.cfg
+    #     return cfg.cosmo.matterPowerSpectrum(k, cfg.z) *self.C_I(k)**2
 
 
     def P_2h(self, k):
+        cfg = self.cfg # just return the linear matter power spectrum
+        return cfg.cosmo.matterPowerSpectrum(k, cfg.z)
         return self.P_2h_ss(k) + self.P_2h_sc(k) + self.P_2h_cc(k)
 
 
