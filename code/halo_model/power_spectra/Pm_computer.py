@@ -14,6 +14,13 @@ def compute_for_k(args: tuple[MatterPower, float]) -> tuple[float, float, float,
         Pm.P_1h_sc(k),
         Pm.P_1h_self_c(k),
         Pm.P_1h_cc(k),
+        Pm.P_2h(k),
+    )
+    return (
+        Pm.P_1h_ss(k),
+        Pm.P_1h_sc(k),
+        Pm.P_1h_self_c(k),
+        Pm.P_1h_cc(k),
         Pm.P_2h_ss(k),
         Pm.P_2h_sc(k),
         Pm.P_2h_cc(k),
@@ -50,15 +57,17 @@ def Pm_computer(Pm: MatterPower, k_vals, max_workers=16):
         dict_temp['P_1h_cc']
     )
 
-    dict_temp['P_2h_ss'] = results[:,4]
-    dict_temp['P_2h_sc'] = results[:,5]
-    dict_temp['P_2h_cc'] = results[:,6]
+    dict_temp['P_2h'] = results[:,4]
+    
+    # dict_temp['P_2h_ss'] = results[:,4]
+    # dict_temp['P_2h_sc'] = results[:,5]
+    # dict_temp['P_2h_cc'] = results[:,6]
 
-    dict_temp['P_2h'] = (
-        dict_temp['P_2h_ss'] +
-        dict_temp['P_2h_sc'] +
-        dict_temp['P_2h_cc']
-    )
+    # dict_temp['P_2h'] = (
+    #     dict_temp['P_2h_ss'] +
+    #     dict_temp['P_2h_sc'] +
+    #     dict_temp['P_2h_cc']
+    # )
 
     dict_temp['P_tot'] = dict_temp['P_1h'] + dict_temp['P_2h']
 

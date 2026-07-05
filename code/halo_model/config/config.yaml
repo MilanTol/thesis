@@ -2,12 +2,12 @@
 #config matter power spectrum
 z: 0
 
-m_min: 1
+m_min: 1e3
 N_m: 64 #power of 2
 
-M_min: 1
+M_min: 1e3
 M_max: 1e16
-N_M: 64 #power of 2
+N_M: 256 #power of 2
 
 
 k_min: 1e-1
@@ -20,7 +20,7 @@ N_k: 64 #power of 2
 massdef: "200c" # !! SHOULD LEAVE THIS BY DEFAULT ON 200m
 
 # factor multiplicator for concentration of clumps
-Q: 1
+Q: 1.33
 
 # Gas profile
 theta_ej: 6
@@ -55,16 +55,15 @@ cosmo_params:
   H0: 70
   Om0: 0.2793
   Ob0: 0.0463
-  sigma8: 0.7207
+  sigma8: 0.821
   ns: 0.972
 
 # halo mass function parameters
-# these are not functional
-M0: 2e9 
+M0: 1e9 
 alpha: 0
 
 #clump mass function parameters
-m0: 2e9
+m0: 1e9
 beta: 0
 
 #data storage

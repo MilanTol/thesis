@@ -127,7 +127,7 @@ class MatterPower:
             second_term = M_sm * self.smooth_profile.fourier(cfg.cosmo, k, M_sm, cfg.z)
             # second_term = M * self.smooth_profile.fourier(cfg.cosmo, k, M, cfg.z)
 
-            third_term = self.clump_distribution.fourier(self.cfg.cosmo, k, M_sm, cfg.z) * self.Ic(k, M)
+            third_term = self.clump_distribution.fourier(self.cfg.cosmo, k, M, cfg.z) * self.Ic(k, M)
 
             return first_term * second_term * third_term * M # Jacobian for dlnM to dM conversion
         
@@ -177,7 +177,7 @@ class MatterPower:
 
             first_term = M**2 * n
             M_sm = (1 - self.clump_mass_func.f(M))*M
-            second_term = self.clump_distribution.fourier(cfg.cosmo, k, M_sm, cfg.z)**2 * self.Ic(k, M)**2
+            second_term = self.clump_distribution.fourier(cfg.cosmo, k, M, cfg.z)**2 * self.Ic(k, M)**2
 
             return first_term * second_term * M # Jacobian for dlnM to dM conversion
         
@@ -244,19 +244,19 @@ class MatterPower:
         return prefactor * romb(ys, dx)
 
 
-    # def P_2h_ss(self, k):
-    #     cfg = self.cfg
-    #     return cfg.cosmo.matterPowerSpectrum(k, cfg.z) * self.S_I(k)**2
+    def P_2h_ss(self, k):
+        cfg = self.cfg
+        return cfg.cosmo.matterPowerSpectrum(k, cfg.z) * self.S_I(k)**2
 
 
-    # def P_2h_sc(self, k):
-    #     cfg = self.cfg
-    #     return 2*cfg.cosmo.matterPowerSpectrum(k, cfg.z) * self.S_I(k)*self.C_I(k)
+    def P_2h_sc(self, k):
+        cfg = self.cfg
+        return 2*cfg.cosmo.matterPowerSpectrum(k, cfg.z) * self.S_I(k)*self.C_I(k)
 
 
-    # def P_2h_cc(self, k):
-    #     cfg = self.cfg
-    #     return cfg.cosmo.matterPowerSpectrum(k, cfg.z) *self.C_I(k)**2
+    def P_2h_cc(self, k):
+        cfg = self.cfg
+        return cfg.cosmo.matterPowerSpectrum(k, cfg.z) *self.C_I(k)**2
 
 
     def P_2h(self, k):
