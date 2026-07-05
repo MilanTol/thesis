@@ -225,6 +225,10 @@ def compute_xi(cfg:Config):
 #setup config for treecorr
 
 def covariance_xi(cfg:Config):
+    """
+    returns the covariance for xi for a euclid-like half-sky survey given a config.
+    For the error just take sqrt.
+    """
     #create theta bins
     nbins = cfg.N_theta
 
@@ -267,8 +271,7 @@ def covariance_xi(cfg:Config):
 def get_cov_delz(config, npatch, method='jackknife', including_shear=False, redshift_separation = 0):
     mask1 = (z < 0.9 - redshift_separation/2)
     mask2 = (z > 0.9 + redshift_separation/2)
-    print(np.sum(mask1)/len(mask1))
-
+    
     if including_shear:
         cat1 = treecorr.Catalog(
             ra=ra[mask1], dec=dec[mask1], ra_units='deg', dec_units='deg', 
