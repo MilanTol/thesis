@@ -17,7 +17,7 @@ from halo_model.halos.base.clump_mass_func.clump_mass_func import ClumpMassFunc
 from halo_model.halos.base.concentration.models.neto2007 import ConcentrationNeto2007
 from halo_model.halos.base.concentration.models.scaled import ConcentrationScaled
 
-from halo_model.halos.base.mass_func.models.tinker2008 import MassFuncTinker2008
+from halo_model.halos.base.mass_func.models.tinker2008_mod import MassFuncTinker2008_mod
 
 from halo_model.halos.base.profile.models.nfw import ProfileNFW
 from halo_model.halos.base.profile.models.stellar_truncated_powerlaw import ProfileStellarTruncatedPowerLaw
@@ -45,7 +45,7 @@ def compute_Pk_2d(cfg: Config)->ccl.Pk2D:
     # define model objects
     c_smooth = ConcentrationNeto2007(cfg)
     c_clump = ConcentrationScaled(cfg, c_smooth)
-    mass_func = MassFuncTinker2008(cfg)
+    mass_func = MassFuncTinker2008_mod(cfg)
     shmr = SHMRMoster2013(cfg, c_smooth)
     shmr_central = SHMRMoster2013Centrals(cfg, c_smooth)
     smooth_profile_dm = ProfileNFW(c_smooth, R_virSO(cfg))
@@ -224,7 +224,7 @@ def compute_xi(cfg:Config):
 
 #setup config for treecorr
 
-def covariance_xi(cfg:Config):
+def covariance_xi(cfg:Config, redshift_separation=0.1):
     """
     returns the covariance for xi for a euclid-like half-sky survey given a config.
     For the error just take sqrt.
@@ -255,8 +255,6 @@ def covariance_xi(cfg:Config):
     }
         
     npatch = 30
-
-    redshift_separation = 0.05
 
     IA_cov_delz = get_cov_delz(config, npatch=npatch, including_shear=False, redshift_separation=redshift_separation)
     IA_cov_delz = IA_cov_delz[:cfg.N_theta, :cfg.N_theta]
