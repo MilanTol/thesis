@@ -87,8 +87,6 @@ class MatterPowerBaryons:
         # To speed up computation we will interpolate Ic and Jc integrals in the initializer
         ######################################################################################
         
-        print("interpolating Ic and Jc functions...")
-
         # Define grids
         lnk_grid = np.log(np.logspace(np.log10(cfg.k_min), np.log10(cfg.k_max), cfg.N_k))
         lnM_grid = np.log(np.logspace(np.log10(cfg.M_min), np.log10(cfg.M_max), cfg.N_M))
