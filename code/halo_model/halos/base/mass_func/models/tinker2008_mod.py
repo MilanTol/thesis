@@ -16,7 +16,8 @@ class MassFuncTinker2008_mod(MassFunc):
             M, z=z, mdef = self.massdef, model = 'tinker08', q_out='dndlnM') / M
 
     def R(self, M):
-        return (1 + self.cfg.M0/M)**self.cfg.alpha
+        M0 = 10**self.cfg.logM0
+        return (1 + M0/M)**self.cfg.alpha
     
     def _hmf(self, M, z):
         return self.R(M) * self.standard(M, z)

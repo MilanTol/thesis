@@ -76,9 +76,13 @@ def compute_Pk(cfg: Config):
     return Pm_dict
 
 
-def param_effect_spectrum(cfg:Config, param:str, val):
+def param_effect_spectrum(cfg:Config, param:str|list[str], val:float|list[float]):
     cfg_mod = copy.deepcopy(cfg)
-    setattr(cfg_mod, param, val)
+    if type(param) is list:
+        for i in range(len(param)):
+            setattr(cfg_mod, param[i], val[i])
+    else:
+        setattr(cfg_mod, param, val)
     
     Pm = compute_Pk(cfg)
     Pm_mod = compute_Pk(cfg_mod)

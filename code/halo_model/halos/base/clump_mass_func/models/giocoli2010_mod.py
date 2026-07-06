@@ -18,7 +18,8 @@ class ClumpMassGiocoli2010_mod(ClumpMassFunc):
         return  (M/m) * (1+self.cfg.z)**0.5 * A * m**alpha * np.exp(-beta * (m / M)**3)
 
     def R(self, m):
-        return (1 + self.cfg.m0/m)**self.cfg.beta
+        m0 = 10**self.cfg.logm0
+        return (1 + m0/m)**self.cfg.beta
     
     def _cmf(self, m, M):
         return self.R(m) * self.standard(m, M)

@@ -1,6 +1,7 @@
 import yaml
 import os
 from colossus.cosmology import cosmology
+import copy
 
 class Config:
 
@@ -61,11 +62,11 @@ class Config:
         self.cosmo = cosmology.setCosmology('myCosmo')
 
         # halo mass function parameters
-        self.M0    = float(config['M0'])
+        self.logM0    = float(config['logM0'])
         self.alpha = float(config['alpha'])
 
         # clump mass function parameters
-        self.m0   = float(config['m0'])
+        self.logm0   = float(config['logm0'])
         self.beta = float(config['beta'])
 
         #data storage
@@ -82,3 +83,13 @@ class Config:
             if k not in ['cosmo']
         }
 
+
+def config_modifier(cfg:Config, param:str|list[str], val:float|list[float])->Config:
+    cfg_mod = copy.deepcopy(cfg)
+    if type(param) is list:
+        for i in range(len(param)):
+            setattr(cfg_mod, param[i], val[i])
+    else:
+        setattr(cfg_mod, param, val)
+    
+    return cfg_mod

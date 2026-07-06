@@ -22,18 +22,18 @@ massdef: "200c" # !! SHOULD LEAVE THIS BY DEFAULT ON 200m
 Q: 1.33
 
 # Gas profile
+logM_c: 13.6
 theta_ej: 6
+mu: 0.9
+gamma: 2
 delta: 8
-gamma: 3
-mu: 1
-logM_c: 13.2
 logM_gaslimit: 10
 
 # Stellar profile
 r_h: 0.015 # radius of galaxies times r200
 
 # SHMR
-S: 1.8 #factor before stellar fraction # THIS DOESNT WORK YET POWER GETS TAKEN AWAY AT LARGE SCALES
+S: 1 #factor before stellar fraction # THIS DOESNT WORK YET POWER GETS TAKEN AWAY AT LARGE SCALES
 
 # config convergence power spectrum
 z_min: 0
@@ -58,11 +58,11 @@ cosmo_params:
   ns: 0.972
 
 # halo mass function parameters
-M0: 1e9 
+logM0: 9 
 alpha: 0
 
 #clump mass function parameters
-m0: 1e9
+logm0: 9
 beta: 0
 
 #data storage

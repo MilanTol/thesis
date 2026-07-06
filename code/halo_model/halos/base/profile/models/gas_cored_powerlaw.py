@@ -102,8 +102,8 @@ class ProfileGasCoredPowerLaw(Profile):
             M = mass_converter(self.cfg.massdef, "200c", M, self.c(cosmo, M, z), z)
                     
         theta_ej = self.cfg.theta_ej # see Table 1 Siegel et al. 2025
-        delta = self.cfg.delta
         gamma = self.cfg.gamma
+        delta = self.cfg.delta
                        
         r_core = 0.1*self.R200(M, z)
         r_ej = theta_ej * self.R200(M, z)
