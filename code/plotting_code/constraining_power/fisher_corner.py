@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 
 
-def fisher_corner(F, fiducial, limits, labels=None):
+def fisher_corner(F, fiducial, limits=None, labels=None):
     """
     Parameters
     ----------
@@ -46,8 +46,13 @@ def fisher_corner(F, fiducial, limits, labels=None):
 
         ax.plot(x, y)
         
-
-        if limits[i] is None:
+        if limits is None:
+            ax.set_xlim(
+                fiducial[i] - 4*sigma_i,
+                fiducial[i] + 4*sigma_i,
+            )
+            
+        elif limits[i] is None:
             ax.set_xlim(
                 fiducial[i] - 4*sigma_i,
                 fiducial[i] + 4*sigma_i,
