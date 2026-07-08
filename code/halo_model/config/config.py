@@ -28,6 +28,9 @@ class Config:
         # clump concentration
         self.Q          = float(config['Q'])
         
+        # clump distribution concentration
+        self.D          = float(config['D'])
+        
         # Gas profile
         self.theta_ej   = float(config['theta_ej'])
         self.delta      = float(config['delta'])
@@ -37,7 +40,7 @@ class Config:
         self.logM_gaslimit = float(config['logM_gaslimit'])
         
         # Stellar profile
-        self.r_h        = float(config['r_h'])
+        self.r_star        = float(config['r_star'])
         
         # SHMR
         self.S          = float(config['S'])

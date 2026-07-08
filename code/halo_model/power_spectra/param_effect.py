@@ -15,7 +15,8 @@ from halo_model.halos.base.clump_mass_func.models.giocoli2010 import ClumpMassGi
 from halo_model.halos.base.clump_mass_func.clump_mass_func import ClumpMassFunc
 
 from halo_model.halos.base.concentration.models.neto2007 import ConcentrationNeto2007
-from halo_model.halos.base.concentration.models.scaled import ConcentrationScaled
+from halo_model.halos.base.concentration.models.scaled_clumps import ConcentrationScaledClumps
+from halo_model.halos.base.concentration.models.scaled_distribution import ConcentrationScaledDistribution
 
 from halo_model.halos.base.mass_func.models.tinker2008_mod import MassFuncTinker2008_mod
 
@@ -39,14 +40,15 @@ from halo_model.halos.base.shmr.models.Niemiec2022 import SMHRNiemiec2022
 def compute_Pk(cfg: Config):
     # define model objects
     c_smooth = ConcentrationNeto2007(cfg)
-    c_clump = ConcentrationScaled(cfg, c_smooth)
+    c_clump = ConcentrationScaledClumps(cfg, c_smooth)
+    c_distribution = ConcentrationScaledDistribution(cfg, c_smooth)
     mass_func = MassFuncTinker2008_mod(cfg)
     shmr = SHMRMoster2013(cfg, c_smooth)
     shmr_central = SHMRMoster2013Centrals(cfg, c_smooth)
     smooth_profile_dm = ProfileNFW(c_smooth, R_virSO(cfg))
     clump_profile_dm = ProfileNFW(c_clump, R_virSO(cfg))
     bias = BiasTinker2010(cfg)
-    clump_distribution = ProfileNFW(c_smooth, R_virSO(cfg))
+    clump_distribution = ProfileNFW(c_distribution, R_virSO(cfg))
     
 
     # computing model power spectra

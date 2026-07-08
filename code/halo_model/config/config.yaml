@@ -21,6 +21,9 @@ massdef: "200c" # !! SHOULD LEAVE THIS BY DEFAULT ON 200m
 # factor multiplicator for concentration of clumps
 Q: 1.33
 
+# clump distribution concentration
+D: 1
+
 # Gas profile
 logM_c: 13.6
 theta_ej: 6
@@ -30,7 +33,7 @@ delta: 8
 logM_gaslimit: 10
 
 # Stellar profile
-r_h: 0.015 # radius of galaxies times r200
+r_star: 0.015 # radius of galaxies times r200
 
 # SHMR
 S: 1 #factor before stellar fraction # THIS DOESNT WORK YET POWER GETS TAKEN AWAY AT LARGE SCALES

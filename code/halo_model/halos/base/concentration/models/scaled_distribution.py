@@ -3,7 +3,7 @@ from ..concentration import Concentration
 from .....config.config import Config
 
 
-class ConcentrationScaled(Concentration):
+class ConcentrationScaledDistribution(Concentration):
     
     def __init__(self, cfg:Config, concentration_halos: Concentration):
         """
@@ -16,7 +16,7 @@ class ConcentrationScaled(Concentration):
 
 
     def _concentration(self, cosmo, m, z):
-        return self.cfg.Q * self.concentration_halos(cosmo, m, z)
+        return self.cfg.D * self.concentration_halos(cosmo, m, z)
 
     
 

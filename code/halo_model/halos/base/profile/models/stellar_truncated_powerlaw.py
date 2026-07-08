@@ -26,7 +26,7 @@ class ProfileStellarTruncatedPowerLaw(Profile):
         self.c = c
         
         R200_mid = self.R200(1e12, cfg.z)
-        R_h_mid  = cfg.r_h * R200_mid
+        R_h_mid  = cfg.r_star * R200_mid
         rmin = 1e-4 * R_h_mid
         rmax = 1e2 * R_h_mid   
         Nr   = 512
@@ -100,7 +100,7 @@ class ProfileStellarTruncatedPowerLaw(Profile):
             mass_converter = NFWMassConverter(self.cfg)
             M = mass_converter(self.cfg.massdef, "200c", M, self.c(cosmo, M, z), z)
                 
-        R_h = self.cfg.r_h * self.R200(M, z)
+        R_h = self.cfg.r_star * self.R200(M, z)
         
         den = R_h * r**2
         exp = np.exp(-(0.5*r/R_h)**2)
