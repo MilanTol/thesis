@@ -226,7 +226,7 @@ def compute_xi(cfg:Config):
 
 #setup config for treecorr
 
-def covariance_xi(cfg:Config, redshift_separation=0.1):
+def covariance_xi(cfg:Config):
     """
     returns the covariance for xi for a euclid-like half-sky survey given a config.
     For the error just take sqrt.
@@ -258,7 +258,7 @@ def covariance_xi(cfg:Config, redshift_separation=0.1):
         
     npatch = 30
 
-    IA_cov_delz = get_cov_delz(config, npatch=npatch, including_shear=False, redshift_separation=redshift_separation)
+    IA_cov_delz = get_cov_delz(config, npatch=npatch)
     IA_cov_delz = IA_cov_delz[:cfg.N_theta, :cfg.N_theta]
     IA_cov_delz_halfsky = (1/209) * IA_cov_delz
 
@@ -268,31 +268,19 @@ def covariance_xi(cfg:Config, redshift_separation=0.1):
 
 # get covariance function
 
-def get_cov_delz(config, npatch, method='jackknife', including_shear=False, redshift_separation = 0):
-    mask1 = (z < 0.9 - redshift_separation/2)
-    mask2 = (z > 0.9 + redshift_separation/2)
-    
-    if including_shear:
-        cat1 = treecorr.Catalog(
-            ra=ra[mask1], dec=dec[mask1], ra_units='deg', dec_units='deg', 
-            k=kappa[mask1], g1=eps1[mask1] + gamma1[mask1], g2=eps2[mask1] +gamma2[mask1], npatch=npatch
-        )
+def get_cov_delz(config, npatch, method='jackknife'):
+    mask1 = (z<2)   #(z < 0.9 - redshift_separation/2)
+    mask2 = (z>0.1) #(z > 0.9 + redshift_separation/2)
 
-        cat2 = treecorr.Catalog(
-            ra=ra[mask2], dec=dec[mask2], ra_units='deg', dec_units='deg', 
-            k=kappa[mask2], g1=eps1[mask2] + gamma1[mask2], g2=eps2[mask2] +gamma2[mask2], npatch=npatch
-        )
+    cat1 = treecorr.Catalog(
+        ra=ra[mask1], dec=dec[mask1], ra_units='deg', dec_units='deg', 
+        k=kappa[mask1], g1=eps1[mask1], g2=eps2[mask1], npatch=npatch
+    )
 
-    else:
-        cat1 = treecorr.Catalog(
-            ra=ra[mask1], dec=dec[mask1], ra_units='deg', dec_units='deg', 
-            k=kappa[mask1], g1=eps1[mask1], g2=eps2[mask1], npatch=npatch
-        )
-
-        cat2 = treecorr.Catalog(
-            ra=ra[mask2], dec=dec[mask2], ra_units='deg', dec_units='deg', 
-            k=kappa[mask2], g1=eps1[mask2], g2=eps2[mask2], npatch=npatch
-        )
+    cat2 = treecorr.Catalog(
+        ra=ra[mask2], dec=dec[mask2], ra_units='deg', dec_units='deg', 
+        k=kappa[mask2], g1=eps1[mask2], g2=eps2[mask2], npatch=npatch
+    )
 
     gg = treecorr.GGCorrelation(config)
     gg.process(cat1, cat2)
