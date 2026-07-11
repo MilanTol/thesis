@@ -37,7 +37,7 @@ def del_xi(cfg:Config, param: str, h_init:float, n_iters:int):
             
     for i in range(n_iters):
         
-        print(f"computing the {i}th pair for Ridders")
+        print(f"computing the {i}th pair for Ridders for parameter {param}")
         
         cfg_low = copy.deepcopy(cfg)
         cfg_up = copy.deepcopy(cfg) 

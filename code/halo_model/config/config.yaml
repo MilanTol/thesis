@@ -3,15 +3,15 @@
 z: 0
 
 m_min: 1e3
-N_m: 32 #power of 2
+N_m: 64 #power of 2
 
 M_min: 1e3
 M_max: 1e16
-N_M: 128 #power of 2
+N_M: 256 #power of 2
 
 k_min: 1e-1
 k_max: 1e4
-N_k: 32 #power of 2
+N_k: 64 #power of 2
 
 # Delta_vir: 340 #See figure 1 in eke et al. for some value of Omega_m
 # Delta_vir is 340 times the mean matter density so 340m
