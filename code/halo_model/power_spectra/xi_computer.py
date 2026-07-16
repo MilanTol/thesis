@@ -15,6 +15,7 @@ from halo_model.halos.base.clump_mass_func.models.giocoli2010 import ClumpMassGi
 from halo_model.halos.base.clump_mass_func.clump_mass_func import ClumpMassFunc
 
 from halo_model.halos.base.concentration.models.neto2007 import ConcentrationNeto2007
+from halo_model.halos.base.concentration.models.pieri2009_clumps import ConcentrationPieri2009_clumps
 from halo_model.halos.base.concentration.models.scaled_clumps import ConcentrationScaledClumps
 from halo_model.halos.base.concentration.models.scaled_distribution import ConcentrationScaledDistribution
 
@@ -45,8 +46,10 @@ def compute_Pk_2d(cfg: Config)->ccl.Pk2D:
     
     # define model objects
     c_smooth = ConcentrationNeto2007(cfg)
+    c_clump_base = ConcentrationPieri2009_clumps(cfg)
     c_clump = ConcentrationScaledClumps(cfg, c_smooth)
     c_distribution = ConcentrationScaledDistribution(cfg, c_smooth)
+    
     mass_func = MassFuncTinker2008_mod(cfg)
     shmr = SHMRMoster2013(cfg, c_smooth)
     shmr_central = SHMRMoster2013Centrals(cfg, c_smooth)
@@ -260,7 +263,7 @@ def covariance_xi(cfg:Config):
 
     IA_cov_delz = get_cov_delz(config, npatch=npatch)
     IA_cov_delz = IA_cov_delz[:cfg.N_theta, :cfg.N_theta]
-    IA_cov_delz_halfsky = (1/209) * IA_cov_delz
+    IA_cov_delz_halfsky = (1/140) * IA_cov_delz
 
     return IA_cov_delz_halfsky
     

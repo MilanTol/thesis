@@ -88,8 +88,8 @@ class ProfileGasCoredPowerLaw(Profile):
         # See Table 1 Siegel et al. 2025
         M_c = 10**self.cfg.logM_c
         mu = self.cfg.mu
-        m = M200 / M_c
-        return 3*m**mu / (1 + m**mu)    
+        m = (M200 / M_c)**mu
+        return 3*m / (1 + m)    
         
         
     def real(self, cosmo, r, M, z):
