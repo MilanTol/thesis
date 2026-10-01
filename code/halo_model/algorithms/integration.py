@@ -12,6 +12,7 @@ the plain :math:`g(M)` of the equation it implements -- no stray ``* M`` at the
 end of every ``return``.
 """
 
+from typing import Callable
 import numpy as np
 from scipy import integrate
 
@@ -41,13 +42,13 @@ class MassIntegral:
         self.n_steps = _next_power_of_two(n_steps)
         
     
-    def __call__(self, integrand: callable[[float]],
+    def __call__(self, integrand: Callable[[float], float],
                  m_low: float, m_high: float) -> float:
         """Integrate ``integrand(M) dM`` from ``m_low`` to ``m_high``.
 
         Args:
             integrand: function of mass ``M``, *without* the ``dlnM -> dM``
-                Jacobian -- this method multiplies by ``M`` for you.
+                Jacobian, this method multiplies by ``M`` for you.
             m_low: lower mass limit (must be > 0).
             m_high: upper mass limit.
 
