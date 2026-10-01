@@ -43,6 +43,6 @@ class _WeightClumpStar:
         self.clump_mass_func = clump_mass_func
 
     def __call__(self, cosmo:cosmology, m, z, M_parent, **kwargs):
-        return (self.shmr(cosmo, m, z) - self.shmr_central(cosmo, m, z)) * self.clump_mass_func.f(M_parent)
+        return (self.shmr(cosmo, m, z) - self.shmr_central(cosmo, m, z)) #* self.clump_mass_func.f(M_parent)
     
     

@@ -57,8 +57,10 @@ class SHMRMoster2013Centrals(SHMR):
         beta = B10 + B11*z_fraction
         gamma = G10 + G11*z_fraction
 
+        gamma_central = 0.2
+        
         M1 = 10**logM1
         M1_inv = 1/M1
-        f_star = 2*N / ( (M*M1_inv)**(-beta) + (M*M1_inv)**(gamma) )
+        f_star = 2*N / ( (M*M1_inv)**(-beta) + (M*M1_inv)**(gamma - gamma_central) )
         return self.cfg.S*f_star
     

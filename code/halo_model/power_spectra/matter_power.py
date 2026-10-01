@@ -4,11 +4,12 @@ from ..halos.base.mass_func.mass_func import MassFunc
 from ..halos.base.clump_mass_func.clump_mass_func import ClumpMassFunc
 from ..halos.base.bias.bias import Bias
 from ..config.config import Config
+from ..algorithms.integration import MassIntegral
 
 import numpy as np
 from multiprocessing import Pool, cpu_count
 from scipy import interpolate
-from scipy.integrate import romb
+
 
 
 class MatterPower:
@@ -49,9 +50,7 @@ class MatterPower:
         self.clump_profile = clump_profile
         self.clump_distribution = clump_distribution
         
-        ######################################################################################
         # To speed up computation we will interpolate Ic and Jc integrals in the initializer
-        ######################################################################################
         
         # Define grids
         lnk_grid = np.log(np.logspace(np.log10(cfg.k_min), np.log10(cfg.k_max), cfg.N_k))

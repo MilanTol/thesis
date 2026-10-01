@@ -31,7 +31,7 @@ class ProfileStellarTruncatedPowerLaw(Profile):
         rmax = 1e2 * R_h_mid   
         Nr   = 512
         
-        M_grid = np.geomspace(cfg.M_min, cfg.M_max, 32)
+        M_grid = np.geomspace(cfg.M_min, cfg.M_max, 64)
         k_grid = get_k_grid(rmin, rmax, Nr)
         fourier_grid = np.zeros((len(M_grid), len(k_grid)))
                 
