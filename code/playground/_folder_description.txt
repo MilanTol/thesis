@@ -1,0 +1,3 @@
+In this folder, I make sketches (usually in python notebooks) to 
+test small bits of code. The code is not documented and not meant
+for usage.
