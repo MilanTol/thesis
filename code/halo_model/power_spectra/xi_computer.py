@@ -10,16 +10,16 @@ from halo_model.config.config import Config
 
 #import ingredient models
 
-from halo_model.halos.base.clump_mass_func.models.giocoli2010_mod import ClumpMassGiocoli2010_mod
+from code.halo_model.base.clump_mass_func.models.giocoli2010_mod import ClumpMassGiocoli2010_mod
 from halo_model.halos.base.clump_mass_func.models.giocoli2010 import ClumpMassGiocoli2010
 from halo_model.halos.base.clump_mass_func.clump_mass_func import ClumpMassFunc
 
 from halo_model.halos.base.concentration.models.neto2007 import ConcentrationNeto2007
-from halo_model.halos.base.concentration.models.pieri2009_clumps import ConcentrationPieri2009_clumps
-from halo_model.halos.base.concentration.models.scaled_clumps import ConcentrationScaledClumps
-from halo_model.halos.base.concentration.models.scaled_distribution import ConcentrationScaledDistribution
+from code.halo_model.base.concentration.models.pieri2009_clumps import ConcentrationPieri2009_clumps
+from code.halo_model.base.concentration.models.scaled_clumps import ConcentrationScaledClumps
+from code.halo_model.base.concentration.models.scaled_distribution import ConcentrationScaledDistribution
 
-from halo_model.halos.base.mass_func.models.tinker2008_mod import MassFuncTinker2008_mod
+from code.halo_model.base.mass_func.models.tinker2008_mod import MassFuncTinker2008_mod
 
 from halo_model.halos.base.profile.models.nfw import ProfileNFW
 from halo_model.halos.base.profile.models.stellar_truncated_powerlaw import ProfileStellarTruncatedPowerLaw
@@ -29,8 +29,8 @@ from halo_model.halos.base.bias.models.tinker2010 import BiasTinker2010
 from halo_model.halos.base.r_vir.models.SO import R_virSO
 
 from halo_model.halos.base.shmr.models.moster2013 import SHMRMoster2013
-from halo_model.halos.base.shmr.models.moster2013_centrals import SHMRMoster2013Centrals
-from halo_model.halos.base.shmr.models.Niemiec2022 import SMHRNiemiec2022
+from code.halo_model.base.shmr.models.moster2013_centrals import SHMRMoster2013Centrals
+from code.halo_model.base.shmr.models.Niemiec2022 import SMHRNiemiec2022
 
 from halo_model.power_spectra.Pm_computer import Pm_computer
 

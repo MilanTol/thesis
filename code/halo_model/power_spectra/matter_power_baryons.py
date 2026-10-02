@@ -1,12 +1,12 @@
-from ..halos.base.profile.profile import Profile, CompositeProfile
-from ..halos.base.shmr.shmr import SHMR
-from ..halos.base.mass_func.mass_func import MassFunc
-from ..halos.base.clump_mass_func.clump_mass_func import ClumpMassFunc
-from ..halos.base.bias.bias import Bias
+from ..base.profile.profile import Profile, CompositeProfile
+from ..base.shmr.shmr import SHMR
+from ..base.mass_func.mass_func import MassFunc
+from ..base.clump_mass_func.clump_mass_func import ClumpMassFunc
+from ..base.bias.bias import Bias
 from ..config.config import Config
 from colossus.cosmology import cosmology
-from ..halos.base.profile.weights import _WeightSmoothDM, _WeightCentralStar, _WeightGas
-from ..halos.base.profile.weights import _WeightClumpDM, _WeightClumpStar, _Unity
+from ..base.profile.weights import _WeightSmoothDM, _WeightCentralStar, _WeightGas
+from ..base.profile.weights import _WeightClumpDM, _WeightClumpStar, _Unity
 
 import numpy as np
 from multiprocessing import Pool, cpu_count

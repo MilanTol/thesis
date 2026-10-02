@@ -1,8 +1,8 @@
-from ..halos.base.profile.profile import Profile
-from ..halos.base.shmr.shmr import SHMR
-from ..halos.base.mass_func.mass_func import MassFunc
-from ..halos.base.clump_mass_func.clump_mass_func import ClumpMassFunc
-from ..halos.base.bias.bias import Bias
+from ..base.profile.profile import Profile
+from ..base.shmr.shmr import SHMR
+from ..base.mass_func.mass_func import MassFunc
+from ..base.clump_mass_func.clump_mass_func import ClumpMassFunc
+from ..base.bias.bias import Bias
 from ..config.config import Config
 from ..algorithms.integration import MassIntegral
 from ..algorithms.grids import tabulate_grid, LogInterpolator2D
