@@ -1,6 +1,6 @@
 from ..profile import Profile
 from ....config.config import Config
-from ...mass_converter import NFWMassConverter
+from ....algorithms.mass_converter import NFWMassConverter
 from ...r_vir.models.SO import R_virSO
 from ...concentration.concentration import Concentration
 from ....algorithms.fourier import fourier, get_k_grid

@@ -1,6 +1,6 @@
 from ..shmr import SHMR
 from ....config.config import Config
-from ...mass_converter import NFWMassConverter
+from ....algorithms.mass_converter import NFWMassConverter
 from ...concentration.concentration import Concentration
 
 import numpy as np
