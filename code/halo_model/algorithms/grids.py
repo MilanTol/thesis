@@ -9,12 +9,9 @@ through instead.
 Then interpolate logarithmically over the 2d array.
 """
 
-from __future__ import annotations
-
 import os
 from multiprocessing import Pool, cpu_count
-from typing import Callable, Sequence
-
+from typing import Callable
 import numpy as np
 from scipy import interpolate
 
@@ -22,7 +19,7 @@ __all__ = ["tabulate_grid", "LogInterpolator2D"]
 
 
 def tabulate_grid(worker: Callable[[tuple], tuple], 
-                  grids: Sequence[np.ndarray],
+                  grids: np.ndarray,
                   extra: tuple = (), 
                   n_outputs: int = 1,
                   processes: int | None = None) -> list[np.ndarray]:
@@ -86,7 +83,7 @@ def _run_worker(point):
     return _WORKER_STATE["worker"](_WORKER_STATE["extra"] + point)
 
 
-def _cartesian_product(grids: Sequence[np.ndarray]):
+def _cartesian_product(grids: np.ndarray):
     """Yield grid points in C order, matching :func:`numpy.unravel_index`."""
     if not grids:
         yield ()

@@ -1,7 +1,18 @@
+R"""
+Config class which contains all relevant input parameter values
+for runs with this pipeline. Many functions require this object as input.
+It also contains further functionality through methods 
+such as returning the grid of values of halo mass, as given by its
+resolution inputted in the config.
+"""
+
+
 import yaml
 import os
 from colossus.cosmology import cosmology
 import copy
+import numpy as np
+
 
 class Config:
 
@@ -71,20 +82,38 @@ class Config:
         # clump mass function parameters
         self.logm0   = float(config['logm0'])
         self.beta = float(config['beta'])
-
+        
+        # max number of processes
+        self.processes = int(config['processes'])
+        
         #data storage
         self.Pm_dir     = str(config['Pm_dir'])
         self.Pk_dir     = str(config['Pk_dir'])
 
+
     def save(self, path):
         with open(os.path.join(path, 'config.yaml'), 'w') as f:
             yaml.dump(self.to_dict(), f)
+    
     
     def to_dict(self):
         return {
             k: v for k, v in self.__dict__.items()
             if k not in ['cosmo']
         }
+        
+    
+    def k_grid(self):
+        return np.geomspace(self.k_min, self.k_max, self.N_k)
+    
+    
+    def M_grid(self):
+        return np.geomspace(self.M_min, self.M_max, self.N_M)
+    
+    
+    def m_grid(self):
+        return np.geomspace(self.m_min, self.m_max, self.N_m)
+    
 
 
 def config_modifier(cfg:Config, param:str|list[str], val:float|list[float])->Config:

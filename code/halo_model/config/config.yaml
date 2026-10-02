@@ -68,6 +68,9 @@ alpha: 0
 logm0: 9
 beta: 0
 
+# max number of processes
+processes: 16
+
 #data storage
 Pm_dir: '/home/milan/Desktop/thesis/code/data/matter_power_spectra/regular'
 Pk_dir: '/home/milan/Desktop/thesis/code/data/convergence_power_spectra/regular'

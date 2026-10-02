@@ -29,7 +29,7 @@ class MassIntegral:
     makes the model cheap enough to interpolate over a (k, M) grid.
 
     Args:
-        n_steps: number of intervals for romb.  Rounded up to the next
+        n_steps: number of intervals for romb (in mass space).  Rounded up to the next
             power of two, since Romberg requires ``2**k + 1`` samples.
 
     Example:

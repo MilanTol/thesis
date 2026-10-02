@@ -5,11 +5,15 @@ from ..halos.base.clump_mass_func.clump_mass_func import ClumpMassFunc
 from ..halos.base.bias.bias import Bias
 from ..config.config import Config
 from ..algorithms.integration import MassIntegral
+from ..algorithms.grids import tabulate_grid, LogInterpolator2D
 
 import numpy as np
 from multiprocessing import Pool, cpu_count
 from scipy import interpolate
 
+
+# The one-halo pieces, in the order they are summed.
+COMPONENTS = ("P_1h_ss", "P_1h_sc", "P_1h_self_c", "P_1h_cc")
 
 
 class MatterPower:
@@ -50,139 +54,135 @@ class MatterPower:
         self.clump_profile = clump_profile
         self.clump_distribution = clump_distribution
         
+        self.rho0 = cfg.cosmo.rho_m(z=0) * 1e9 # convert units to M_odot h^2 / Mpc^3
+        
+        # instantiate mass integral calculator object for both clumps and parent halos:
+        self._halo_integrator = MassIntegral(cfg.N_M)
+        self._clump_integrator = MassIntegral(cfg.N_m)
+        
+        
         # To speed up computation we will interpolate Ic and Jc integrals in the initializer
         
-        # Define grids
-        lnk_grid = np.log(np.logspace(np.log10(cfg.k_min), np.log10(cfg.k_max), cfg.N_k))
-        lnM_grid = np.log(np.logspace(np.log10(cfg.M_min), np.log10(cfg.M_max), cfg.N_M))
-
-        # Allocate arrays
-        Ic_vals = np.zeros((len(lnk_grid), len(lnM_grid)))
-        Jc_vals = np.zeros((len(lnk_grid), len(lnM_grid)))
-    
-        args = [(np.log(cfg.m_min), lnM, cfg.N_m, self, np.exp(lnk), np.exp(lnM)) for lnk in lnk_grid for lnM in lnM_grid]
-
-        with Pool(processes=cpu_count()) as pool:
-            points = pool.map(compute_point, args)
-
-        # Fill results into arrays
-        for (k, M, Ic_val, Jc_val) in points:
-            i = np.where(lnk_grid == np.log(k))[0][0]
-            j = np.where(lnM_grid == np.log(M))[0][0]
-            Ic_vals[i, j] = Ic_val
-            Jc_vals[i, j] = Jc_val
-
-        # Create interpolators
-        self.Ic_logspace = interpolate.RegularGridInterpolator((lnk_grid, lnM_grid), Ic_vals,
-                                                        bounds_error=False, fill_value=None)
-        self.Jc_logspace = interpolate.RegularGridInterpolator((lnk_grid, lnM_grid), Jc_vals,
-                                                        bounds_error=False, fill_value=None)
-    
-    def Ic(self, k, M):
-        return self.Ic_logspace((np.log(k), np.log(M)))
-    
-    def Jc(self, k, M):
-        return self.Jc_logspace((np.log(k), np.log(M)))
-    
-
-    def P_1h_ss(self, k):
+    def _tabulate_clump_integrals(self) -> None:
+        """Tabulate ``I_c`` and ``J_c`` over ``(k, M)`` and build interpolators."""
         cfg = self.cfg
-        
-        rho0 = cfg.cosmo.rho_m(z=0) * 1e9 #should be at z=0!
-        prefactor = 1/rho0**2
+        k_grid = cfg.k_grid()
+        M_grid = cfg.M_grid()
 
-        def M_integrand(lnM):
-            M = np.exp(lnM)
-            n = self.mass_func(M, cfg.z)
+        Ic_values, Jc_values = tabulate_grid(
+            _clump_integrals_worker, (k_grid, M_grid), extra=(self,),
+            n_outputs=2, processes=cfg.processes)
 
-            first_term = n
-            M_sm = (1 - self.clump_mass_func.f(M))*M
-            second_term = M_sm**2 * self.smooth_profile.fourier(cfg.cosmo, k, M_sm, cfg.z)**2
-            # second_term = M**2 * self.smooth_profile.fourier(cfg.cosmo, k, M, cfg.z)**2
-
-            return first_term*second_term*M #times M for jacobian dlnM to dM
-
-        xs = np.linspace(np.log(cfg.M_min), np.log(cfg.M_max), cfg.N_M + 1)
-        dx = xs[1] - xs[0]
-        ys = [M_integrand(lnM) for lnM in xs]
-
-        return prefactor * romb(ys, dx)
+        # Clamped above k_max: both integrals decay to zero on small scales,
+        # and extrapolating their linear values would carry the power spectrum
+        # negative just past the grid edge.
+        self._Ic_interp = LogInterpolator2D(k_grid, M_grid, Ic_values,
+                                            clamp_above_x=True)
+        self._Jc_interp = LogInterpolator2D(k_grid, M_grid, Jc_values,
+                                            clamp_above_x=True)
     
-
-    def P_1h_sc(self, k):
-
-        cfg = self.cfg
-        rho0 = cfg.cosmo.rho_m(z=0) * 1e9 #should be at z=0!
-        prefactor = 1/rho0**2
-
-        def M_integrand(ln_M):
-            M = np.exp(ln_M) 
-            n = self.mass_func(M, cfg.z)
-            first_term = 2 * M  * n
-
-            M_sm = (1 - self.clump_mass_func.f(M))*M
-            second_term = M_sm * self.smooth_profile.fourier(cfg.cosmo, k, M_sm, cfg.z)
-            # second_term = M * self.smooth_profile.fourier(cfg.cosmo, k, M, cfg.z)
-
-            third_term = self.clump_distribution.fourier(self.cfg.cosmo, k, M, cfg.z) * self.Ic(k, M)
-
-            return first_term * second_term * third_term * M # Jacobian for dlnM to dM conversion
-        
-        xs = np.linspace(np.log(cfg.M_min), np.log(cfg.M_max), cfg.N_M + 1)
-        dx = xs[1] - xs[0]
-        ys = [M_integrand(lnM) for lnM in xs]
-
-        return prefactor * romb(ys, dx)
-        
-
-    def P_1h_self_c(self, k):
-        """self-clump component for the 1-halo term. See eq. (27) Giocoli et al.. 
-        Args:
-            k: wavenumber [Mpc/h]^-1
+    
+    def _compute_Ic(self, k: float, M: float) -> float:
+        """Evaluate ``I_c(k, M)``, Giocoli et al. (2010) equation 30.
+        The mass-weighted mean clump profile, i.e. how a halo's clumps look in
+        Fourier space as a population.
         """
         cfg = self.cfg
-        rho0 = cfg.cosmo.rho_m(z=0) * 1e9 #should be at z=0!
-        prefactor = 1/rho0**2
+        def integrand(m):
+            return (
+                self.clump_mass_func(m, M)
+                * m * self.clump_profile.fourier(cfg.cosmo, k, m, cfg.z, M_parent=M)
+            )
+        return 1/M * self._clump_integrator(integrand, cfg.m_min, M)
+    
+    
+    def _compute_Jc(self, k: float, M: float) -> float:
+        """Evaluate ``J_c(k, M)``, Giocoli et al. (2010) equation 31.
+        The clump self-correlation: each clump correlated with itself rather
+        than with other clumps.
+        """
+        cfg = self.cfg
+        cfg.activate()
 
-        def M_integrand(ln_M):
-            M = np.exp(ln_M)
-            n = self.mass_func(M, cfg.z)
+        def integrand(m):
+            return (
+                self.clump_mass_func(m, M)
+                * m * self.clump.profile.fourier(cfg.cosmo, k, m, cfg.z, M_parent=M)
+                * m * self.clump.profile.fourier(cfg.cosmo, k, m, cfg.z, M_parent=M)
+            )
+        return 1/(M*M) * self._clump_integrator(integrand, cfg.m_min, M)
+    
+    
+    def Ic(self, k, M):
+        """Interpolated ``I_c(k, M)``."""
+        return self._Ic_interp(k, M)
 
-            first_term = M**2 * n
-            return first_term * self.Jc(k, M) * M # Jacobian for dlnM to dM conversion   
+    def Jc(self, k, M):
+        """Interpolated ``J_c(k, M)``."""
+        return self._Jc_interp(k, M)
+    
+    
+    def M_sm(self, M):
+        """Returns the mass in the smooth component given the total halo mass"""
+        return (1 - self.clump_mass_func.f(M))*M
+    
+    
+    def P_1h_ss(self, k):
+        """Smooth-smooth one-halo term: the smooth halo correlated with itself."""
+        def integrand(M):
+            return (
+                self.mass_func(M, self.cfg.z)
+                * self.M_sm(M) * self.smooth_profile.fourier(self.cfg.cosmo, k, self.M_sm(M), self.cfg.z)
+                * self.M_sm(M) * self.smooth_profile.fourier(self.cfg.cosmo, k, self.M_sm(M), self.cfg.z)
+            )
+        return (
+            1/(self.rho0*self.rho0) 
+            *self._halo_integrator(integrand, self.cfg.M_min, self.cfg.M_max)
+        )
+        
+    
+    def P_1h_sc(self, k):
+        """Smooth-clump one-halo term: the smooth halo against its own clumps."""
+        def integrand(M):
+            return (
+                2 * self.mass_func(M, self.cfg.z)
+                * self.M_sm(M) * self.smooth_profile.fourier(self.cfg.cosmo, k, self.M_sm(M), self.cfg.z)
+                * self.clump_distribution.fourier(self.cfg.cosmo, k, M, self.cfg.z)
+                * M * self.Ic(k, M)
+            )
+        return (
+            1/(self.rho0*self.rho0) 
+            *self._halo_integrator(integrand, self.cfg.M_min, self.cfg.M_max)
+        )     
 
-        xs = np.linspace(np.log(cfg.M_min), np.log(cfg.M_max), cfg.N_M + 1)
-        dx = xs[1] - xs[0]
-        ys = [M_integrand(lnM) for lnM in xs]
 
-        return prefactor * romb(ys, dx)
+    def P_1h_self_c(self, k):
+        """Clump self-correlation one-halo term (Giocoli et al. 2010, eq. 27)."""
+        def integrand(M):
+            return (
+                self.mass_func(M, self.cfg.z)
+                * M * M * self.Jc(k, M)
+            )
+        return (
+            1/(self.rho0*self.rho0) 
+            *self._halo_integrator(integrand, self.cfg.M_min, self.cfg.M_max)
+        )  
 
 
     def P_1h_cc(self, k):
-        """clump-clump component for the 1-halo term. See eq. (28) Giocoli et al.. 
-        Args:
-            k: wavenumber [Mpc/h]^-1
-        """
-        cfg = self.cfg
-        rho0 = cfg.cosmo.rho_m(z=0) * 1e9 #should be at z=0!
-        prefactor = 1/rho0**2
-
-        def M_integrand(ln_M):
-
-            M = np.exp(ln_M)
-            n = self.mass_func(M, cfg.z)
-
-            first_term = M**2 * n
-            M_sm = (1 - self.clump_mass_func.f(M))*M
-            second_term = self.clump_distribution.fourier(cfg.cosmo, k, M, cfg.z)**2 * self.Ic(k, M)**2
-
-            return first_term * second_term * M # Jacobian for dlnM to dM conversion
-        
-        xs = np.linspace(np.log(cfg.M_min), np.log(cfg.M_max), cfg.N_M + 1)
-        dx = xs[1] - xs[0]
-        ys = [M_integrand(lnM) for lnM in xs]
-
-        return prefactor * romb(ys, dx)
+        """Clump-clump one-halo term (Giocoli et al. 2010, eq. 28)."""
+        def integrand(M):
+            return (
+                self.mass_func(M, self.cfg.z)
+                * self.clump_distribution.fourier(self.cfg.cosmo, k, M, self.cfg.z)
+                * self.clump_distribution.fourier(self.cfg.cosmo, k, M, self.cfg.z)
+                * M * self.Ic(k, M)
+                * M * self.Ic(k, M)
+            )
+        return (
+            1/(self.rho0*self.rho0) 
+            *self._halo_integrator(integrand, self.cfg.M_min, self.cfg.M_max)
+        )  
     
     
     def P_1h(self ,k):
@@ -190,129 +190,26 @@ class MatterPower:
         Args:
             k: wavenumber [Mpc/h]^-1
         """
-        return self.P_1h_ss(k) + self.P_1h_sc(k) + self.P_1h_self_c(k) + self.P_1h_cc(k)
+        # sum over strings in components to get all 1h terms.
+        return sum(getattr(self, c)(k) for c in COMPONENTS)
     
 
-    def S_I(self, k):
-
-        cfg = self.cfg
-        rho0 = cfg.cosmo.rho_m(z=0) * 1e9 #should be at z=0!
-        prefactor = 1/rho0
-
-        def M_integrand(lnM):
-
-            M = np.exp(lnM)
-
-            n = self.mass_func(M, cfg.z)
-            first_term = M * n * self.bias(M, cfg.z)
-
-            M_sm = (1-self.clump_mass_func.f(M))*M
-            second_term = M_sm * self.smooth_profile.fourier(cfg.cosmo, k, M, cfg.z) #1/M is multiplied out by jacobian
-
-            return first_term*second_term #M jacobian is multiplied out by second term 1/M
-
-        xs = np.linspace(np.log(cfg.M_min), np.log(cfg.M_max), cfg.N_M + 1)
-        dx = xs[1] - xs[0]
-        ys = [M_integrand(lnM) for lnM in xs]
-
-        return prefactor * romb(ys, dx)
-
-
-    def C_I(self, k):
-        cfg = self.cfg
-        rho0 = cfg.cosmo.rho_m(z=0) * 1e9 #should be at z=0!
-        prefactor = 1/rho0
-
-        def M_integrand(lnM):
-
-            M = np.exp(lnM)
-
-            n = self.mass_func(M, cfg.z)
-            first_term = M * n * self.bias(M, z=cfg.z)
-
-            second_term = self.clump_distribution.fourier(cfg.cosmo, k, M, cfg.z) * self.Ic(k, M)
-
-            return first_term*second_term * M #M jacobian is multiplied out by second term 1/M
-
-        xs = np.linspace(np.log(cfg.M_min), np.log(cfg.M_max), cfg.N_M + 1)
-        dx = xs[1] - xs[0]
-        ys = [M_integrand(lnM) for lnM in xs]
-
-        return prefactor * romb(ys, dx)
-
-
-    def P_2h_ss(self, k):
-        cfg = self.cfg
-        return cfg.cosmo.matterPowerSpectrum(k, cfg.z) * self.S_I(k)**2
-
-
-    def P_2h_sc(self, k):
-        cfg = self.cfg
-        return 2*cfg.cosmo.matterPowerSpectrum(k, cfg.z) * self.S_I(k)*self.C_I(k)
-
-
-    def P_2h_cc(self, k):
-        cfg = self.cfg
-        return cfg.cosmo.matterPowerSpectrum(k, cfg.z) *self.C_I(k)**2
-
-
-    def P_2h(self, k):
-        cfg = self.cfg # just return the linear matter power spectrum
-        return cfg.cosmo.matterPowerSpectrum(k, cfg.z)
-        return self.P_2h_ss(k) + self.P_2h_sc(k) + self.P_2h_cc(k)
+    def P_lin(self, k):
+        """Returns the linear power spectrum"""
+        return self.cfg.cosmo.matterPowerSpectrum(k, self.cfg.z)
 
 
     def P_tot(self, k):
+        """
+        Returns the total power on a scale k.
+        We approximate the 2h power spectrum with the linear power spectrum, 
+        which is sufficiently accurate for the small scales we are interested in in this work.
+        """
         return self.P_1h(k) + self.P_2h(k)
-
-
-def Ic_integrand(lnm, self: MatterPower, k, M):
-    """I_c integral, eq. (30) in Giocoli et al..
-    Args:
-        k: wavenumber [Mpc/h]^-1
-        M_parent: total halo mass [h M_sun]
-    """
-    m = np.exp(lnm)
-    clump_profile_temp = self.clump_profile.fourier(self.cfg.cosmo, k, m, self.cfg.z)
-
-    return (m/M 
-            * clump_profile_temp 
-            * self.clump_mass_func(m, M) 
-            * m) # Jacobian for dlnm to dm conversion 
-    
-
-def Ic_analytic(lnm_min, lnm_max, N, self: MatterPower, k, M):
-    xs = np.linspace(lnm_min, lnm_max, N+1)
-    dx = xs[1] - xs[0]
-    ys = [Ic_integrand(x, self, k, M) for x in xs]
-    return romb(ys, dx, show=False)
-    
-
-def Jc_integrand(lnm, self: MatterPower, k, M):
-    """J_c integral, eq. (31) in Giocoli et al..
-    Args:
-        k: wavenumber [Mpc/h]^-1
-        M_parent: total halo mass [h M_sun]
-    """
-
-    m = np.exp(lnm)
-    return (
-        (m/M)**2 
-        * self.clump_profile.fourier(self.cfg.cosmo, k, m, self.cfg.z)**2  
-        * self.clump_mass_func(m, M) 
-        * m)   # Jacobian for dlnm to dm conversion
-
-
-def Jc_analytic(lnm_min, lnm_max, N, self: MatterPower, k, M):
-    xs = np.linspace(lnm_min, lnm_max, N+1)
-    dx = xs[1] - xs[0]
-    ys = [Jc_integrand(x, self, k, M) for x in xs]
-    return romb(ys, dx, show=False)
-    
+  
 
 # Worker function to compute both Ic and Jc for one (k, M)
-def compute_point(args):
-    lnm_min, lnm_max, N, Pm, k, M = args
-    Ic_val = Ic_analytic(lnm_min, lnm_max, N, Pm, k, M)
-    Jc_val = Jc_analytic(lnm_min, lnm_max, N, Pm, k, M)
-    return (k, M, Ic_val, Jc_val)
+def _clump_integrals_worker(args: tuple[MatterPower, float, float]) -> tuple[float, float]:
+    model, k, M = args
+    return model._compute_Ic(k, M), model._compute_Jc(k, M)
+    
