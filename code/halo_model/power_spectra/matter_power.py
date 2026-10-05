@@ -1,3 +1,9 @@
+"""
+Base class for computing power spectra. 
+To specify dark matter only vs baryon models, 
+this must be done through the profiles of halos.
+"""
+
 from ..base.profile.profile import Profile
 from ..base.shmr.shmr import SHMR
 from ..base.mass_func.mass_func import MassFunc
