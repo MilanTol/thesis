@@ -108,9 +108,7 @@ def dark_matter_only(cfg: Config) -> MatterPower:
 
     Args:
         cfg: model configuration.
-        two_halo: how to compute the two-halo term; see
-            :class:`~halo_model.power_spectra.matter_power.MatterPower`.
-
+        
     Returns:
         A model ready to evaluate at ``cfg.z``.
     """
@@ -144,8 +142,6 @@ def with_baryons(cfg: Config) -> MatterPower:
 
     Args:
         cfg: model configuration.
-        two_halo: how to compute the two-halo term; see
-            :class:`~halo_model.power_spectra.matter_power.MatterPower`.
 
     Returns:
         A model ready to evaluate at ``cfg.z``.
