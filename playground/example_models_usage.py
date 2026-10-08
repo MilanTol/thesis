@@ -6,7 +6,7 @@ access the power spectrum values of various components.
 
 # fix pwd
 import os
-code_dir = '/home/milan/Desktop/thesis/code/'
+code_dir = os.getcwd() + '/code/'
 os.chdir(code_dir)
 
 

@@ -1,7 +1,7 @@
 """
 Base class for computing power spectra. 
 To specify dark matter only vs baryon models, 
-this must be done through the profiles of halos.
+this must be done through the profiles of halos (see models.py).
 """
 
 from ..base.profile.profile import Profile
