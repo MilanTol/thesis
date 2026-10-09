@@ -68,8 +68,9 @@ class MassIntegral:
         ln_low, ln_high = np.log(m_low), np.log(m_high)
 
         ln_grid = np.linspace(ln_low, ln_high, self.n_steps + 1)
+        
         samples = [log_integrand(ln_m) for ln_m in ln_grid]
-        return integrate.romb(samples, ln_grid[1] - ln_grid[0])
+        return integrate.romb(samples, ln_grid[1] - ln_grid[0], axis=0)
     
     
     def __repr__(self) -> str:
