@@ -14,8 +14,6 @@ silently changing the config its caller still held. Use :meth:`Config.replace`
 instead -- it returns a new config and leaves the original untouched.
 """
 
-from __future__ import annotations
-
 import dataclasses
 import hashlib
 from dataclasses import dataclass, field
@@ -31,7 +29,7 @@ from .mass_definition import MassDefinition
 
 __all__ = ["Config", "MassDefinition", "DEFAULT_CONFIG_PATH"]
 
-DEFAULT_CONFIG_PATH = Path(__file__).resolve().parent[0] + 'config.yaml'
+DEFAULT_CONFIG_PATH = Path(__file__).resolve().parents[0] / "config.yaml"
 
 #: Attributes holding lazily built objects, dropped when pickling.
 _CACHED_ATTRS = ("_cosmo", "_mass_definition")

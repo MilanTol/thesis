@@ -4,8 +4,8 @@ access the power spectrum values of various components.
 """
 
 
-from thesis.src.config.config import Config
-from thesis.src.models import *
+from clumpy_halo_model import Config
+from clumpy_halo_model import dark_matter_only, with_baryons
 
 
 # instantiate a config object:

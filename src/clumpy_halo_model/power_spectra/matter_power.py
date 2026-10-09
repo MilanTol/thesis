@@ -4,11 +4,11 @@ To specify dark matter only vs baryon models,
 this must be done through the profiles of halos (see models.py).
 """
 
-from ..base.profile.profile import Profile
-from ..base.shmr.shmr import SHMR
-from ..base.mass_func.mass_func import MassFunc
-from ..base.clump_mass_func.clump_mass_func import ClumpMassFunc
-from ..base.bias.bias import Bias
+from ..halos.profile.profile import Profile
+from ..halos.shmr.shmr import SHMR
+from ..halos.mass_func.mass_func import MassFunc
+from ..halos.clump_mass_func.clump_mass_func import ClumpMassFunc
+from ..halos.bias.bias import Bias
 from ..config.config import Config
 from ..algorithms.integration import MassIntegral
 from ..algorithms.grids import tabulate_grid, LogInterpolator2D
@@ -66,8 +66,8 @@ class MatterPower:
         self._halo_integrator = MassIntegral(cfg.N_M)
         self._clump_integrator = MassIntegral(cfg.N_m)
         
-        
         # To speed up computation we will interpolate Ic and Jc integrals in the initializer
+        self._tabulate_clump_integrals()
         
     def _tabulate_clump_integrals(self) -> None:
         """Tabulate ``I_c`` and ``J_c`` over ``(k, M)`` and build interpolators."""
@@ -113,8 +113,8 @@ class MatterPower:
         def integrand(m):
             return (
                 self.clump_mass_func(m, M)
-                * m * self.clump.profile.fourier(cfg.cosmo, k, m, cfg.z, M_parent=M)
-                * m * self.clump.profile.fourier(cfg.cosmo, k, m, cfg.z, M_parent=M)
+                * m * self.clump_profile.fourier(cfg.cosmo, k, m, cfg.z, M_parent=M)
+                * m * self.clump_profile.fourier(cfg.cosmo, k, m, cfg.z, M_parent=M)
             )
         return 1/(M*M) * self._clump_integrator(integrand, cfg.m_min, M)
     
@@ -211,7 +211,21 @@ class MatterPower:
         We approximate the 2h power spectrum with the linear power spectrum, 
         which is sufficiently accurate for the small scales we are interested in in this work.
         """
-        return self.P_1h(k) + self.P_2h(k)
+        return self.P_1h(k) + self.P_lin(k)
+    
+    
+    def components(self, k) -> dict[str, float]:
+        """Every component of the spectrum at a single ``k``.
+
+        Returns:
+            A dict with the four one-halo pieces, their sum ``P_1h``, the
+            two-halo term ``P_2h`` and the total ``P_tot``.
+        """
+        values = {name: getattr(self, name)(k) for name in COMPONENTS}
+        values["P_1h"] = sum(values.values())
+        values["P_2h"] = self.P_lin(k)
+        values["P_tot"] = values["P_1h"] + values["P_2h"]
+        return values
   
 
 # Worker function to compute both Ic and Jc for one (k, M)
