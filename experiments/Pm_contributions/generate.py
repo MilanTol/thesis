@@ -11,7 +11,6 @@ from clumpy_halo_model.models import *
 from pathlib import Path
 root = Path(__file__).resolve().parents[2]
 
-
 # load config file
 cfg = Config.from_yaml(root/"experiments/Pm_contributions/config.yaml")
 
