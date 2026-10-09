@@ -4,15 +4,8 @@ access the power spectrum values of various components.
 """
 
 
-# fix pwd
-import os
-code_dir = os.getcwd() + '/code/'
-os.chdir(code_dir)
-
-
-# imports: ["Ingredients", "dark_matter_only", "with_baryons"]
-from halo_model.config.config import Config
-from halo_model.models import *
+from thesis.src.config.config import Config
+from thesis.src.models import *
 
 
 # instantiate a config object:
