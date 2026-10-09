@@ -1,3 +1,11 @@
 {
-    "python.analysis.autoImportCompletions": true
+  "python.analysis.autoImportCompletions": true,
+
+
+  "files.exclude": {
+    "**/data": false,
+    "**/figures": false,
+    "**/__pycache__": true,
+    "**/*.egg-info": true
+  }
 }

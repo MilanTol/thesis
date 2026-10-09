@@ -1,6 +1,7 @@
 *.fits
 *.pdf
 *.csv
+data/
 
 # Python bytecode / cache
 __pycache__/
@@ -16,3 +17,6 @@ venv/
 build/
 dist/
 *.egg-info/
+
+
+
