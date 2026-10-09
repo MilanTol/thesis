@@ -2,14 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt # pyright: ignore[reportMissingModuleSource]
 
 from pathlib import Path
-root = Path(__file__).resolve().parents[2]
-
-figures_dir = root / "figures/Pm_contributions"
-
-# load in data
-data_dir = root / "data/Pm_contributions/" 
-ratios = np.load(data_dir / "ratios.npz")
-k = ratios['k']
 
 # plt.rcParams.update({
 #     "font.size": 12,          # base font size
@@ -19,6 +11,16 @@ k = ratios['k']
 #     "xtick.labelsize": 12,     # x tick labels
 #     "ytick.labelsize": 12,    # y tick labels
 # })
+
+root = Path(__file__).resolve().parents[2]
+
+figures_dir = root / "figures/pm_contributions"
+
+# load in data
+data_dir = root / "data/pm_contributions/" 
+ratios = np.load(data_dir / "ratios.npz")
+k = ratios['k']
+
 
 plt.plot(k, ratios['ss'], label = r'$P_{1h,ss}$', linestyle='-')
 plt.plot(k, ratios['sc'], label = r'$P_{1h,sc}$', linestyle='--')
@@ -208,4 +210,4 @@ ax3.set_ylabel(r'$(\Delta-\Delta_\mathrm{Giocoli})/\Delta_\mathrm{Giocoli}$')
 ax3.set_title('Residuals')
 
 plt.tight_layout()
-plt.savefig("Pm_1h_ratios_comparison.pdf")
+plt.savefig(figures_dir / "Pm_1h_ratios_comparison.pdf")
