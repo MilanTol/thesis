@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # pyright: ignore[reportMissingModuleSource]
 
 from pathlib import Path
 root = Path(__file__).resolve().parents[2]
@@ -16,7 +16,7 @@ k = ratios['k']
 #     "axes.labelsize": 12,     # x and y labels
 #     "axes.titlesize": 12,     # title
 #     "legend.fontsize": 12,    # legend
-#     "xtick.labelsize": 12,    # x tick labels
+#     "xtick.labelsize": 12,     # x tick labels
 #     "ytick.labelsize": 12,    # y tick labels
 # })
 
