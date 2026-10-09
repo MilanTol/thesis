@@ -1,6 +1,8 @@
 """
-Here we construct a DMO power spectrum and plot the relative contributions
-of the smooth/clump auto/cross correlations.
+Here we construct a DMO power spectrum and a baryon power spectrum
+then compute the ratio between the two aka the reaction.
+When plotting we compare this ratio to the reaction predicted from 
+the flamingo hydrodynamic simulations. 
 """
 
 import numpy as np
