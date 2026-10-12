@@ -1,1 +1,2 @@
 In this folder the .fits file of the Euclid flagship simulation is stored.
+The fits file can be downloaded from cosmohub.
