@@ -1,9 +1,5 @@
 
-
-This readme.text file was generated on 30-09-2026 by Milan Tol	
-
-
-1. GENERAL INFORMATION
+GENERAL INFORMATION
 
 Project or Paper Title : Probing substructure with cosmic shear
 
@@ -16,62 +12,26 @@ To this end, we use a halo model that incorporates substructure to capture the e
 
 Authors information : 
 Name : Milan Tol
-ORCID :
 Institution : Leiden University
 Email : milantol35@gmail.com
 
-Contributor Roles (CRediT Taxonomy):
+Contributor Roles:
 Name : Divya Rana
 CRediT role(s) : Supervision
 Name : Henk Hoekstra
 CRediT role(s) : Supervision
 
-Contacts : <provide at least two contacts with regards to this data set/data package>
 
-
-
-2. SHARING/ACCESS INFORMATION
-
-- Links to other (publicly accessible) locations of the data : https://github.com/MilanTol/thesis
-
-
-3. DATA & FILE OVERVIEW
+DATA & FILE OVERVIEW
 
 File naming convention: 
-Lowercase snake_case, no spaces. Pattern: <quantity>_<variant>_<setting>.<ext>,
-ordered general to specific. Parameter names are the same everywhere (m0, beta, Qc, QD).
-Numbered prefixes (01_, 02_) give execution order for scripts and notebooks.
-Zero-padded numbers (bin01). No dates or "final/new" in filenames; versions are in git.
-
-File List or folder tree : <list all files or folders, as appropriate for dataset organization contained in the dataset, directory structure and a brief description of all data files>
-
-File formats: <list all file formats included; for proprietary formats (e.g., .opju, .ai, instrument-specific formats), specify required software and version; indicate whether open-format exports (e.g., .csv, .tiff, .png) are provided>
-
-- Relationship between files, if important : <e.g., which analysis script is used to produce which data file>
-
-- Additional related data collected that was not included in the current data package :
+Lowercase snake_case, spaces given by underscores (_). 
+Models for the halo model are named after first author lastnames (lowercase) + date of publication: <name><year>.py.
+Parameter names are the same everywhere (m0, beta, Qc, QD).
+Zero-padded numbers (bin01). versions are in git.
 
 
 
-4. METHODOLOGICAL INFORMATION
-
-Description of methods used for collection/generation of data :
-<include links or references to publications (manuscript) or other documentation containing experimental design or protocols used in data collection (lab Journals)>
-
-Methods for processing the data :
-<describe how the submitted data were generated from the raw or collected data>
-
-Instrument- or software-specific information needed to interpret the data:
-<include full name and version of software, and any necessary packages or libraries needed to run scripts> <e.g., Bruker Vutara VXL; MATLAB version, OriginLab version>
-
-Calibration information, if applicable : <e.g., calibration files location>
-
-<include any additional methodological information needed to interpret and/or use the data, as appropriate>
-
-
-
-5. DATA-SPECIFIC INFORMATION FOR: [FILENAME]
-<repeat this section for each dataset, folder or file, as appropriate>
 
 - Variable List: <list variable name(s), any abbreviations, units of measure, codes or symbols used as appropriate for each>
 - Missing data codes: <list Specialized formats or other abbreviations used>
