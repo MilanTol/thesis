@@ -13,6 +13,7 @@ from ..config.config import Config
 from .matter_power import COMPONENTS, MatterPower
 
 __all__ = ["AngularPower", "SPEED_OF_LIGHT_KM_S"]
+COMPONENTS = ("C_1h_ss", "C_1h_sc", "C_1h_self_c", "C_1h_cc")
 
 #: Speed of light in km/s, matching the units Colossus reports H in.
 SPEED_OF_LIGHT_KM_S = 299792.458
@@ -220,6 +221,20 @@ class AngularPower:
         """The total convergence power spectrum."""
         return self.C_1h(ell) + self.C_2h(ell)
 
+
+    def components(self, ell) -> dict[str, float]:
+        """Every component of the spectrum at a single ``ell``.
+
+        Returns:
+            A dict with the four one-halo pieces, their sum ``C_1h``, the
+            two-halo term ``C_2h`` and the total ``C_tot``.
+        """
+        values = {name: getattr(self, name)(ell) for name in COMPONENTS}
+        values["P_1h"] = sum(values.values())
+        values["P_2h"] = self.C_2h(ell)
+        values["P_tot"] = values["P_1h"] + values["P_2h"]
+        return values
+ 
 
 def _spectrum_worker(args):
     """Evaluate every component of one model at one ``k``."""
