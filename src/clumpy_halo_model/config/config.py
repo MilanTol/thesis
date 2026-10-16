@@ -5,14 +5,6 @@ It also contains further functionality through methods
 such as returning the grid of values of halo mass, as given by its
 resolution inputted in the config.
 """
-"""Model configuration.
-
-:class:`Config` is a frozen dataclass loaded from a YAML file. Being frozen
-matters: several places used to build a variant of a config by deep-copying it
-and calling ``setattr``, and ``AngularPower`` mutated ``cfg.z`` inside a loop,
-silently changing the config its caller still held. Use :meth:`Config.replace`
-instead -- it returns a new config and leaves the original untouched.
-"""
 
 import dataclasses
 import hashlib
