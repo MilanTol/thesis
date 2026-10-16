@@ -203,6 +203,12 @@ class MatterPower:
     def P_lin(self, k):
         """Returns the linear power spectrum"""
         return self.cfg.cosmo.matterPowerSpectrum(k, self.cfg.z)
+    
+    def P_2h(self, k):
+        """
+        Returns 2-halo power spectrum (which is the linear power spectrum in this work)
+        """
+        return self.P_lin(k)
 
 
     def P_tot(self, k):
