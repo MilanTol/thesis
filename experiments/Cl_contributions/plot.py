@@ -14,29 +14,29 @@ from pathlib import Path
 
 root = Path(__file__).resolve().parents[2]
 
-figures_dir = root / "figures/pm_contributions"
+figures_dir = root / "figures/Cl_contributions"
 
 # load in data
-data_dir = root / "data/pm_contributions/" 
+data_dir = root / "data/Cl_contributions/" 
 ratios = np.load(data_dir / "ratios.npz")
-k = ratios['k']
+ell = ratios['ell']
 
 
-plt.plot(k, ratios['ss'], label = r'$P_{1h,ss}$', linestyle='-')
-plt.plot(k, ratios['sc'], label = r'$P_{1h,sc}$', linestyle='--')
-plt.plot(k, ratios['self_c'], label = r'$P_{1h,\mathrm{self-}c}$', linestyle='-.')
-plt.plot(k, ratios['cc'], label = r'$P_{1h,cc}$', linestyle=':')
+plt.plot(ell, ratios['ss'], label = r'$C_{1h,ss}$', linestyle='-')
+plt.plot(ell, ratios['sc'], label = r'$C_{1h,sc}$', linestyle='--')
+plt.plot(ell, ratios['self_c'], label = r'$C_{1h,\mathrm{self-}c}$', linestyle='-.')
+plt.plot(ell, ratios['cc'], label = r'$C_{1h,cc}$', linestyle=':')
 
 plt.yscale('log')
 plt.xscale('log')
 
 plt.ylim(1e-3, None)
-plt.xlim(np.min(k), np.max(k))
+plt.xlim(np.min(ell), np.max(ell))
 
-plt.xlabel(r'$k \; [h/\mathrm{Mpc}]$')
-plt.ylabel(r'$P_{m, i}(k) / P_m(k)$')
+plt.xlabel(r'$ell \; [h/\mathrm{Mpc}]$')
+plt.ylabel(r'$C_{m, i}(k) / C_m(k)$')
 
 plt.grid()
 # plt.legend(fontsize='xx-small')
 plt.legend()
-plt.savefig(figures_dir / "Pm_1h_ratios.pdf", bbox_inches="tight")
+plt.savefig(figures_dir / "Cl_1h_ratios.pdf", bbox_inches="tight")
