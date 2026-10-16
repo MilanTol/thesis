@@ -1,180 +1,227 @@
-from .matter_power import MatterPower
-from ..base.profile.profile import Profile
-from ..base.mass_func.mass_func import MassFunc
-from ..base.clump_mass_func.clump_mass_func import ClumpMassFunc
-from ..base.bias.bias import Bias
-from ..config.config import Config
+"""The angular (convergence) power spectrum, via the Limber approximation."""
+
+from __future__ import annotations
+
+import warnings
+from typing import Callable
 
 import numpy as np
-from scipy import interpolate
 from scipy import integrate
-from multiprocessing import Pool, cpu_count
 
-#speed of light
-c = 3e5 #km/s
+from ..algorithms.grids import LogInterpolator2D, tabulate_grid
+from ..config.config import Config
+from .matter_power import COMPONENTS, MatterPower
+
+__all__ = ["AngularPower", "SPEED_OF_LIGHT_KM_S"]
+
+#: Speed of light in km/s, matching the units Colossus reports H in.
+SPEED_OF_LIGHT_KM_S = 299792.458
+
 
 class AngularPower:
-    def __init__(self,
-                 cfg: Config,
-                 mass_func: MassFunc,
-                 smooth_profile: Profile,
-                 bias: Bias,
-                 clump_mass_func: ClumpMassFunc,
-                 clump_profile: Profile,
-                 clump_distribution: Profile
-                 ):
-        """       
-        :param cfg: Config object
-        :type cfg: Config
-        :param mass_func: halo mass fucntion
-        :type mass_func: MassFunc
-        :param bias: bias
-        :type bias: Bias
-        :param smooth_profile: smooth profile
-        :type smooth_profile: Profile
-        :param clump_mass_func: Description
-        :type clump_mass_func: ClumpMassFunc
-        :param clump_profile: Description
-        :type clump_profile: Profile
-        :param clump_distribution: Description
-        :type clump_distribution: Profile
-        """
-        
+    """Convergence power spectrum ``C_ell`` built from a 3-D matter spectrum.
+
+    Each component of ``P(k)`` is evaluated at ``cfg.N_z`` redshifts, then
+    interpolated over ``(k, z)`` and projected along the line of sight with the
+    lensing kernel. Because every component is projected separately, the
+    contribution of each one to ``C_ell`` can be inspected.
+
+    Args:
+        cfg: model configuration.
+        build_model: a callable turning a config into a
+            :class:`~halo_model.power_spectra.matter_power.MatterPower`,
+            e.g. :func:`halo_model.models.with_baryons`.
+
+    Note:
+        Building this object constructs one matter-power model per redshift,
+        so it is the most expensive object in the package.
+    """
+
+    def __init__(self, cfg: Config,
+                 build_model: Callable[[Config], MatterPower]):
         self.cfg = cfg
-        self.mass_func = mass_func
-        self.smooth_profile = smooth_profile
-        self.bias = bias
-        self.clump_mass_func = clump_mass_func
-        self.clump_profile = clump_profile
-        self.clump_distribution = clump_distribution
-        
-        z_linspace = np.linspace(cfg.z_min, cfg.z_max, cfg.N_z)
-        self.Pm_list = []
+        self.build_model = build_model
 
-        #get matter power spectrum at each z value
-        for z in z_linspace:
-            self.cfg.z = z
-            Pm = MatterPower(
-                cfg, 
-                mass_func=mass_func, 
-                smooth_profile=smooth_profile, 
-                bias=bias,
-                clump_mass_func=clump_mass_func, 
-                clump_profile=clump_profile, 
-                clump_distribution=clump_distribution
-                )
-            self.Pm_list.append(Pm)
+        z_grid = cfg.z_grid()
+        k_grid = cfg.k_grid()
 
-        print("interpolating power spectra over k and z")
+        if cfg.z_sources > cfg.z_max:
+            warnings.warn(
+                f"z_sources={cfg.z_sources} lies beyond z_max={cfg.z_max}, so "
+                "the line-of-sight integral extrapolates P(k, z) in redshift. "
+                "Raise z_max to cover the source plane.",
+                RuntimeWarning, stacklevel=2)
 
-        # Define grids
-        lnk_grid = np.log(np.logspace(np.log10(cfg.k_min), np.log10(cfg.k_max), cfg.N_k))
+        # One model per redshift. cfg.replace() rather than mutating cfg.z:
+        # the previous implementation assigned to cfg.z in this loop, which
+        # left the caller's config permanently pointing at the last redshift.
+        self.models = [build_model(cfg.replace(z=z)) for z in z_grid]
 
-        # Allocate arrays
-        P_1h_ss_vals = np.zeros((len(lnk_grid), len(z_linspace)))
-        P_1h_sc_vals = np.zeros((len(lnk_grid), len(z_linspace)))
-        P_1h_self_c_vals = np.zeros((len(lnk_grid), len(z_linspace)))
-        P_1h_cc_vals = np.zeros((len(lnk_grid), len(z_linspace)))
-        P_2h_vals = np.zeros((len(lnk_grid), len(z_linspace)))
-    
-        args = [(np.exp(lnk), Pm) for lnk in lnk_grid for Pm in self.Pm_list]
+        # The models are the second grid axis, so each task carries only the
+        # one model it needs. Passing `self` here instead would drag the whole
+        # list -- and `build_model` -- into every task, and would make a
+        # non-picklable `build_model` (a lambda, say) fail to parallelise.
+        tables = tabulate_grid(
+            _spectrum_worker, (k_grid, self.models),
+            n_outputs=len(COMPONENTS) + 1, processes=cfg.processes)
 
-        with Pool(processes=cpu_count()) as pool:
-            points = pool.map(compute_point, args)
+        names = list(COMPONENTS) + ["P_2h"]
+        self._interpolators = {
+            name: LogInterpolator2D(k_grid, z_grid, table, log_y=False)
+            for name, table in zip(names, tables)
+        }
 
-        # Fill results into arrays
-        for (k, z, P_1h_ss_val, P_1h_sc_val, P_1h_self_c_val, P_1h_cc_val, P_2h_val) in points:
-            i = np.where(lnk_grid == np.log(k))[0][0]
-            j = np.where(z_linspace == z)[0][0]
-            P_1h_ss_vals[i,j] = P_1h_ss_val
-            P_1h_sc_vals[i,j] = P_1h_sc_val
-            P_1h_self_c_vals[i,j] = P_1h_self_c_val
-            P_1h_cc_vals[i,j] = P_1h_cc_val
-            P_2h_vals[i,j] = P_2h_val
+    # ------------------------------------------------------------------
+    # interpolated 3-D spectra
+    # ------------------------------------------------------------------
 
-        # Create interpolators
-        self.P_1h_ss_lnk = interpolate.RegularGridInterpolator((lnk_grid, z_linspace), P_1h_ss_vals,
-                                                        bounds_error=False, fill_value=None)
-        self.P_1h_sc_lnk = interpolate.RegularGridInterpolator((lnk_grid, z_linspace), P_1h_sc_vals,
-                                                        bounds_error=False, fill_value=None)
-        self.P_1h_self_c_lnk = interpolate.RegularGridInterpolator((lnk_grid, z_linspace), P_1h_self_c_vals,
-                                                        bounds_error=False, fill_value=None)
-        self.P_1h_cc_lnk = interpolate.RegularGridInterpolator((lnk_grid, z_linspace), P_1h_cc_vals,
-                                                        bounds_error=False, fill_value=None)
-        self.P_2h_lnk = interpolate.RegularGridInterpolator((lnk_grid, z_linspace), P_2h_vals,
-                                                        bounds_error=False, fill_value=None)
-        
-        
-    #matter power spectrum components interpolated over k and z:
+    def P(self, name: str, k, z):
+        """One named component of ``P(k, z)``.
+
+        Args:
+            name: one of the entries of
+                :data:`~halo_model.power_spectra.matter_power.COMPONENTS`,
+                or ``"P_2h"``.
+            k: wavenumber [h/Mpc].
+            z: redshift.
+
+        Raises:
+            KeyError: if ``name`` is not a tabulated component.
+        """
+        if name not in self._interpolators:
+            raise KeyError(
+                f"unknown component {name!r}; available: "
+                f"{', '.join(sorted(self._interpolators))}")
+        return self._interpolators[name](k, z)
+
     def P_1h_ss(self, k, z):
-        return self.P_1h_ss_lnk((np.log(k), z))
+        """Smooth-smooth one-halo term at ``(k, z)``."""
+        return self.P("P_1h_ss", k, z)
+
     def P_1h_sc(self, k, z):
-        return self.P_1h_sc_lnk((np.log(k), z))
+        """Smooth-clump one-halo term at ``(k, z)``."""
+        return self.P("P_1h_sc", k, z)
+
     def P_1h_self_c(self, k, z):
-        return self.P_1h_self_c_lnk((np.log(k), z))
+        """Clump self-correlation one-halo term at ``(k, z)``."""
+        return self.P("P_1h_self_c", k, z)
+
     def P_1h_cc(self, k, z):
-        return self.P_1h_cc_lnk((np.log(k), z))
+        """Clump-clump one-halo term at ``(k, z)``."""
+        return self.P("P_1h_cc", k, z)
+
     def P_1h(self, k, z):
-        return self.P_1h_ss(k, z) + self.P_1h_sc(k, z) + self.P_1h_self_c(k,z) + self.P_1h_cc(k,z)
+        """The full one-halo term at ``(k, z)``."""
+        return sum(self.P(name, k, z) for name in COMPONENTS)
+
     def P_2h(self, k, z):
-        return self.P_2h_lnk((np.log(k), z))
-    
+        """The two-halo term at ``(k, z)``."""
+        return self.P("P_2h", k, z)
+
+    def P_tot(self, k, z):
+        """The total matter power spectrum at ``(k, z)``."""
+        return self.P_1h(k, z) + self.P_2h(k, z)
+
+    # ------------------------------------------------------------------
+    # projection
+    # ------------------------------------------------------------------
 
     def lensing_kernel(self, z):
-        cfg = self.cfg
+        """Lensing efficiency for sources at a single plane ``cfg.z_sources``.
 
-        H0 = cfg.cosmo.H0 #returns in km/s/Mpc
-        Om0 = cfg.cosmo.Om0
-        prefactor = 3/2 * Om0 * H0**2 / c**2 
-        distance_factor = (cfg.cosmo.comovingDistance(z_max = z)
-                            * cfg.cosmo.comovingDistance(z_max = cfg.z_sources - z)
-                            / cfg.cosmo.comovingDistance(z_max = cfg.z_sources))
-        
-        return prefactor * distance_factor * (1+z)
-
-
-    def P_to_C(self, l, P, w):
-        """
-        Returns convergence power spectrum at value l using lensing kernel.
         Args:
-            l: angular scale.
-            P: 3d powerspectrum. Must have only k, z as arguments; so P = P(k,z).
-            w: weight function. Must have only z as arguments: so w = w(z)
-            cosmo: cosmology object from colossus.
+            z: lens redshift.
+
+        Returns:
+            The kernel ``W(z)``, zero beyond the source plane.
         """
         cfg = self.cfg
+        cosmo = cfg.cosmo   # also activates it for the Colossus globals
+
+        prefactor = (1.5 * cosmo.Om0 * cosmo.H0 ** 2
+                     / SPEED_OF_LIGHT_KM_S ** 2)
+        if np.any(np.asarray(z) >= cfg.z_sources):
+            # Past the source plane there is nothing left to lens. Without
+            # this, Colossus is handed a negative redshift and returns a
+            # negative distance, so the kernel silently goes negative.
+            return np.zeros_like(np.asarray(z, dtype=float))
+
+        # The middle factor is the comoving distance *between* lens and
+        # source. Writing it as chi(z_s - z) -- the distance out to a redshift
+        # difference -- is not the same thing, because chi is non-linear in z;
+        # it overstates the ratio by 1.06x at z=0.1 rising to 2.75x at z=1.9,
+        # and the kernel is squared in the projection.
+        distance_ratio = (
+            cosmo.comovingDistance(z_max=z)
+            * cosmo.comovingDistance(z_min=z, z_max=cfg.z_sources)
+            / cosmo.comovingDistance(z_max=cfg.z_sources))
+        return prefactor * distance_ratio * (1 + z)
+
+    def project(self, ell, P, weight=None, epsrel: float | None = None) -> float:
+        """Project a 3-D spectrum to an angular one under the Limber approximation.
+
+        Args:
+            ell: angular multipole.
+            P: the 3-D spectrum, called as ``P(k, z)``.
+            weight: the kernel, called as ``w(z)``; defaults to
+                :meth:`lensing_kernel`.
+            epsrel: relative tolerance of the line-of-sight integral;
+                defaults to ``cfg.epsrel``.
+
+        Returns:
+            ``C_ell`` for that spectrum.
+        """
+        cfg = self.cfg
+        weight = self.lensing_kernel if weight is None else weight
+        epsrel = cfg.epsrel if epsrel is None else epsrel
 
         def integrand(z):
-            D = cfg.cosmo.comovingDistance(z_max = z)
-            H = cfg.cosmo.Hz(z) #returns in km/s/Mpc --> note that c is given in km/s
-            return 2*np.pi * c/H * w(z)**2 / D**2 * P(l/D, z)
+            # Limber: C_l = int dz (c/H) W(z)^2 / chi^2 P(l/chi, z). The
+            # lensing kernel already carries its full normalisation, so there
+            # is no 2*pi here.
+            distance = cfg.cosmo.comovingDistance(z_max=z)
+            hubble = cfg.cosmo.Hz(z)          # km/s/Mpc, matching c above
+            return (SPEED_OF_LIGHT_KM_S / hubble
+                    * weight(z) ** 2 / distance ** 2 * P(ell / distance, z))
 
-        I, err = integrate.quad(func=integrand, a=0, b=cfg.z_sources, epsrel=1e-4, limit=200)
+        value, _ = integrate.quad(integrand, 0, cfg.z_sources,
+                                  epsrel=epsrel, limit=200)
+        return value
 
-        return I
-    
+    def C(self, name: str, ell):
+        """``C_ell`` for one named component of the matter spectrum."""
+        return self.project(ell, lambda k, z: self.P(name, k, z))
 
-    def C_1h_ss(self, l):
-        return self.P_to_C(l, self.P_1h_ss, self.lensing_kernel)
-    def C_1h_sc(self, l):
-        return self.P_to_C(l, self.P_1h_sc, self.lensing_kernel)
-    def C_1h_self_c(self, l):
-        return self.P_to_C(l, self.P_1h_self_c, self.lensing_kernel)
-    def C_1h_cc(self, l):
-        return self.P_to_C(l, self.P_1h_cc, self.lensing_kernel)
-    def C_1h(self, l):
-        return self.P_to_C(l, self.P_1h, self.lensing_kernel)
-    def C_2h(self, l):
-        return self.P_to_C(l, self.P_2h, self.lensing_kernel)
-    def C_tot(self, l):
-        return self.C_1h(l) + self.C_2h(l)
+    def C_1h_ss(self, ell):
+        """Smooth-smooth contribution to ``C_ell``."""
+        return self.C("P_1h_ss", ell)
 
-# Worker function to compute both Ic and Jc for one (k, M)
-def compute_point(args: tuple[float, MatterPower]):
-    k, Pm = args
-    P_1h_ss_val = Pm.P_1h_ss(k)
-    P_1h_sc_val = Pm.P_1h_sc(k)
-    P_1h_self_c_val = Pm.P_1h_self_c(k)
-    P_1h_cc_val = Pm.P_1h_cc(k)
-    P_2h_val = Pm.P_2h(k)
-    return (k, Pm.cfg.z, P_1h_ss_val, P_1h_sc_val, P_1h_self_c_val, P_1h_cc_val, P_2h_val)
+    def C_1h_sc(self, ell):
+        """Smooth-clump contribution to ``C_ell``."""
+        return self.C("P_1h_sc", ell)
+
+    def C_1h_self_c(self, ell):
+        """Clump self-correlation contribution to ``C_ell``."""
+        return self.C("P_1h_self_c", ell)
+
+    def C_1h_cc(self, ell):
+        """Clump-clump contribution to ``C_ell``."""
+        return self.C("P_1h_cc", ell)
+
+    def C_1h(self, ell):
+        """One-halo contribution to ``C_ell``."""
+        return self.project(ell, self.P_1h)
+
+    def C_2h(self, ell):
+        """Two-halo contribution to ``C_ell``."""
+        return self.project(ell, self.P_2h)
+
+    def C_tot(self, ell):
+        """The total convergence power spectrum."""
+        return self.C_1h(ell) + self.C_2h(ell)
+
+
+def _spectrum_worker(args):
+    """Evaluate every component of one model at one ``k``."""
+    k, model = args
+    return tuple(getattr(model, name)(k) for name in COMPONENTS) + (model.P_2h(k),)
