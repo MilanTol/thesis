@@ -13,7 +13,7 @@ from pathlib import Path
 root = Path(__file__).resolve().parents[2]
 
 # load config file
-cfg = Config.from_yaml(root/"experiments/Pm_contributions/config.yaml")
+cfg = Config.from_yaml(root/"experiments/Cl_contributions/config.yaml")
 
 
 # Construct a DMO power spectrum:
@@ -27,12 +27,12 @@ values = ANGULAR_POWER.components(ell)
 
 # compute relative contributions of each term
 ratios: dict[str, float] = {}
-ratios['ss'] = values['P_1h_ss'] / values['P_1h']
-ratios['sc'] = values['P_1h_sc'] / values['P_1h']
-ratios['self_c'] = values['P_1h_self_c'] / values['P_1h']
-ratios['cc'] = values['P_1h_cc'] / values['P_1h']
+ratios['ss'] = values['C_1h_ss'] / values['C_1h']
+ratios['sc'] = values['C_1h_sc'] / values['C_1h']
+ratios['self_c'] = values['C_1h_self_c'] / values['C_1h']
+ratios['cc'] = values['C_1h_cc'] / values['C_1h']
 
 
 # safe data
-data_dir = root/"data/Pm_contributions" 
-np.savez(data_dir / "ratios.npz", k=k, **ratios)
+data_dir = root/"data/Cl_contributions" 
+np.savez(data_dir / "ratios.npz", ell=ell, **ratios)

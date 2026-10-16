@@ -1,0 +1,73 @@
+
+#config matter power spectrum
+z: 0
+
+m_min: 1e3
+N_m: 64 #power of 2
+
+M_min: 1e3
+M_max: 1e16
+N_M: 128 #power of 2
+
+k_min: 1e-1
+k_max: 1e4
+N_k: 64 #power of 2
+
+# Delta_vir: 340 #See figure 1 in eke et al. for some value of Omega_m
+# Delta_vir is 340 times the mean matter density so 340m
+
+massdef: "200c" # !! SHOULD LEAVE THIS BY DEFAULT ON 200m
+
+# factor multiplicator for concentration of clumps
+Q: 1.33
+
+# clump distribution concentration
+D: 1
+
+# Gas profile
+logM_c: 13.6
+theta_ej: 6
+mu: 0.9
+gamma: 2
+delta: 8
+logM_gaslimit: 10
+
+# Stellar profile
+r_star: 0.015 # radius of galaxies times r200
+
+# SHMR
+S: 1 #factor before stellar fraction # THIS DOESNT WORK YET POWER GETS TAKEN AWAY AT LARGE SCALES
+
+# config convergence power spectrum
+z_min: 0
+z_max: 2
+N_z: 6    #amount of redshift points to sample from
+l_min: 1e1
+l_max: 1e6
+N_l: 128  #Number of points along l used for interpolation
+
+# xi correlation
+theta_min: 1 # minimum angular scale for xi+ (in arcsecs)
+theta_max: 1e3 # maximum angular scale for xi+ (in arcsecs)
+N_theta: 10 # number of theta bins
+
+# Cosmology parameters 
+cosmo_params:
+  flat: true
+  H0: 70
+  Om0: 0.2793
+  Ob0: 0.0463
+  sigma8: 0.821
+  ns: 0.972
+
+# halo mass function parameters
+logM0: 9 
+alpha: 0
+
+#clump mass function parameters
+logm0: 9
+beta: 0
+
+# max number of processes
+processes: 16
+
