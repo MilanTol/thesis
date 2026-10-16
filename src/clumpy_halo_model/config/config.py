@@ -155,6 +155,15 @@ class Config:
         
         Args: 
             **overrides: any parameters to be overridden from original.
+            
+        Example:
+            >>> base = Config(omega_m=0.31, sigma8=0.81)
+            >>> c1 = base.replace(sigma8=0.85)
+            >>> c2 = base.replace(omega_m=0.30, sigma8=0.82)
+            >>> base.sigma8   # base is never mutated
+            0.81
+            >>> c1.sigma8
+            0.85
         """
         return dataclasses.replace(self, **{
             name: _coerce(_field(type(self), name), value)
@@ -174,6 +183,13 @@ class Config:
 
         Raises:
             ValueError: if the two sequences have different lengths.
+        
+        Example:
+            One parameter, one value:
+            >>> c = base.vary("sigma8", 0.85)
+
+            Several parameters, parallel sequences:
+            >>> c = base.vary(["omega_m", "sigma8"], [0.30, 0.82]) 
         """
         if isinstance(params, str):
             return self.replace(**{params: values})
