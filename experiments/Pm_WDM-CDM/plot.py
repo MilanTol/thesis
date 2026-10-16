@@ -31,7 +31,7 @@ plt.plot(k, ratios['tot'], label = r'$P_{tot}$', linestyle='-', color='black')
 plt.yscale('log')
 plt.xscale('log')
 
-plt.ylim(1e-3, None)
+plt.ylim(0.7, 1.2)
 plt.xlim(np.min(k), np.max(k))
 
 plt.xlabel(r'$k \; [h/\mathrm{Mpc}]$')

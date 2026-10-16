@@ -14,10 +14,10 @@ from pathlib import Path
 
 root = Path(__file__).resolve().parents[2]
 
-figures_dir = root / "figures/pm_contributions"
+figures_dir = root / "figures/Pm_contributions"
 
 # load in data
-data_dir = root / "data/pm_contributions/" 
+data_dir = root / "data/Pm_contributions/" 
 ratios = np.load(data_dir / "ratios.npz")
 k = ratios['k']
 

@@ -16,9 +16,14 @@ cfg_WDM = Config.from_yaml(root/"experiments/Pm_WDM-CDM/config.yaml")
 cfg_CDM = cfg_WDM.replace(alpha=0, beta=0)
 
 
-# Construct a DMO power spectrum:
-WDM_POWER = with_baryons(cfg_WDM)
-CDM_POWER = with_baryons(cfg_CDM)
+# Construct DMO power spectra:
+WDM_POWER = dark_matter_only(cfg_WDM)
+CDM_POWER = dark_matter_only(cfg_CDM)
+
+
+# # Construct baryon power spectra:
+# WDM_POWER = with_baryons(cfg_WDM)
+# CDM_POWER = with_baryons(cfg_CDM)
 
 
 # extract values
@@ -28,7 +33,7 @@ CDM_values = CDM_POWER.components(k)
 
 # compute relative contributions of each term
 ratios: dict[str, float] = {}
-ratios['ss'] = WDM_values['P_1h_ss'] / WDM_values['P_1h_ss']
+ratios['ss'] = WDM_values['P_1h_ss'] / CDM_values['P_1h_ss']
 ratios['sc'] = WDM_values['P_1h_sc'] / CDM_values['P_1h_sc']
 ratios['self_c'] = WDM_values['P_1h_self_c'] / CDM_values['P_1h_self_c']
 ratios['cc'] = WDM_values['P_1h_cc'] / CDM_values['P_1h_cc']

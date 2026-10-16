@@ -126,20 +126,15 @@ class MatterPower:
     def Jc(self, k, M):
         """Interpolated ``J_c(k, M)``."""
         return self._Jc_interp(k, M)
-    
-    
-    def M_sm(self, M):
-        """Returns the mass in the smooth component given the total halo mass"""
-        return (1 - self.clump_mass_func.f(M))*M
-    
+        
     
     def P_1h_ss(self, k):
         """Smooth-smooth one-halo term: the smooth halo correlated with itself."""
         def integrand(M):
             return (
                 self.mass_func(M, self.cfg.z)
-                * self.M_sm(M) * self.smooth_profile.fourier(self.cfg.cosmo, k, self.M_sm(M), self.cfg.z)
-                * self.M_sm(M) * self.smooth_profile.fourier(self.cfg.cosmo, k, self.M_sm(M), self.cfg.z)
+                * M * self.smooth_profile.fourier(self.cfg.cosmo, k, M, self.cfg.z)
+                * M * self.smooth_profile.fourier(self.cfg.cosmo, k, M, self.cfg.z)
             )
         return (
             1/(self.rho0*self.rho0) 
@@ -152,7 +147,7 @@ class MatterPower:
         def integrand(M):
             return (
                 2 * self.mass_func(M, self.cfg.z)
-                * self.M_sm(M) * self.smooth_profile.fourier(self.cfg.cosmo, k, self.M_sm(M), self.cfg.z)
+                * M * self.smooth_profile.fourier(self.cfg.cosmo, k, M, self.cfg.z)
                 * self.clump_distribution.fourier(self.cfg.cosmo, k, M, self.cfg.z)
                 * M * self.Ic(k, M)
             )

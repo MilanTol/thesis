@@ -13,10 +13,8 @@ k_min: 1e-1
 k_max: 1e4
 N_k: 64 #power of 2
 
-# Delta_vir: 340 #See figure 1 in eke et al. for some value of Omega_m
-# Delta_vir is 340 times the mean matter density so 340m
 
-massdef: "200c" # !! SHOULD LEAVE THIS BY DEFAULT ON 200m
+massdef: "200c" # !! SHOULD LEAVE THIS BY DEFAULT ON 200c
 
 # factor multiplicator for concentration of clumps
 Q: 1.33
@@ -60,14 +58,15 @@ cosmo_params:
   sigma8: 0.821
   ns: 0.972
 
-# halo mass function parameters
-logM0: 9 
-alpha: 1
-
-#clump mass function parameters
-logm0: 9
-beta: 1
 
 # max number of processes
 processes: 16
 
+
+# halo mass function parameters
+logM0: 9 
+alpha: -1
+
+#clump mass function parameters
+logm0: 9
+beta: -1

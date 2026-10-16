@@ -25,8 +25,8 @@ BARYON_POWER = with_baryons(cfg)
 
 # extract values
 k = cfg.k_grid()
-dmo_power = DMO_POWER.components(k)['P_1h']
-baryon_power = BARYON_POWER.components(k)['P_1h']
+dmo_power = DMO_POWER.components(k)['P_tot']
+baryon_power = BARYON_POWER.components(k)['P_tot']
 
 
 # construct ratio of power in baryons vs dmo:
