@@ -11,6 +11,7 @@ from scipy import integrate
 from ..algorithms.grids import LogInterpolator2D, tabulate_grid
 from ..config.config import Config
 from .matter_power import COMPONENTS, MatterPower
+
 MATTER_COMPONENTS = COMPONENTS
 __all__ = ["AngularPower", "SPEED_OF_LIGHT_KM_S"]
 COMPONENTS = ("C_1h_ss", "C_1h_sc", "C_1h_self_c", "C_1h_cc")
@@ -239,4 +240,4 @@ class AngularPower:
 def _spectrum_worker(args):
     """Evaluate every component of one model at one ``k``."""
     k, model = args
-    return tuple(getattr(model, name)(k) for name in COMPONENTS) + (model.P_2h(k),)
+    return tuple(getattr(model, name)(k) for name in MATTER_COMPONENTS) + (model.P_2h(k),)
