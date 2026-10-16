@@ -11,7 +11,7 @@ from scipy import integrate
 from ..algorithms.grids import LogInterpolator2D, tabulate_grid
 from ..config.config import Config
 from .matter_power import COMPONENTS, MatterPower
-
+MATTER_COMPONENTS = COMPONENTS
 __all__ = ["AngularPower", "SPEED_OF_LIGHT_KM_S"]
 COMPONENTS = ("C_1h_ss", "C_1h_sc", "C_1h_self_c", "C_1h_cc")
 
@@ -64,9 +64,9 @@ class AngularPower:
         # non-picklable `build_model` (a lambda, say) fail to parallelise.
         tables = tabulate_grid(
             _spectrum_worker, (k_grid, self.models),
-            n_outputs=len(COMPONENTS) + 1, processes=cfg.processes)
+            n_outputs=len(MATTER_COMPONENTS) + 1, processes=cfg.processes)
 
-        names = list(COMPONENTS) + ["P_2h"]
+        names = list(MATTER_COMPONENTS) + ["P_2h"]
         self._interpolators = {
             name: LogInterpolator2D(k_grid, z_grid, table, log_y=False)
             for name, table in zip(names, tables)
