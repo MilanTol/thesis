@@ -47,17 +47,13 @@ class Config:
     N_k: int              # wavenumber grid points
     massdef: str      # spherical-overdensity mass definition
 
+    # --- models ---
+    models: Mapping[str, str] # maps a physical notion to a particular model: gas_profile -> Siegel2025
+    params: Mapping[str, Mapping[str, any]] # maps a physical notion to a set of parameters stored in a dataclass (see parameters.py)
+    
     # --- clump structure ---
     Q: float            # clump concentration scaling
     D: float             # clump spatial-distribution concentration scaling
-
-    # --- gas profile (Siegel et al. 2025, Table 1) ---
-    logM_c: float 
-    theta_ej: float 
-    mu: float 
-    gamma: float 
-    delta: float
-    logM_gaslimit: float
 
     # --- stellar profile ---
     r_star: float      # galaxy scale radius in units of R200c
