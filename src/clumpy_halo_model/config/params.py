@@ -3,9 +3,12 @@ Parameter sections for every selectable model.
 
 Each model gets one frozen dataclass holding its parameters, with no default
 values: every value comes from config.yaml. COMPONENTS maps
-``component -> {model name -> parameter dataclass}``. To add a model: write its
-dataclass, add one line to COMPONENTS, add its section (and selection) to
-config.yaml, and register its implementation class in the registry.
+``component -> {model name -> parameter dataclass}``. 
+
+To add a model: 
+write its dataclass, add one line to COMPONENTS, 
+add its section (and selection) to config.yaml, 
+and register its implementation class in the registry.
 
 This module must stay free of heavy imports: Config imports it, and the
 profile classes import Config.
@@ -103,14 +106,20 @@ def build_section(cls: type[ModelParams], values: Any) -> ModelParams:
         TypeError: for keys that are not fields of ``cls``.
     """
     if isinstance(values, cls):
+        # check whether the model is passed as an object to values,
+        # if so, simply take the passed model
         return values
+    
     if values is None:
+        # return default values if no values are passed
         return cls()
+    
     known = {f.name: f for f in dataclasses.fields(cls)}
     unknown = set(values) - set(known)
     if unknown:
         raise TypeError(
             f"unknown key(s) for {cls.__name__}: {', '.join(sorted(unknown))}. "
             f"Valid keys are: {', '.join(sorted(known))}")
+        
     return cls(**{name: _CASTS.get(known[name].type, lambda x: x)(value)
                   for name, value in values.items()})
