@@ -4,10 +4,17 @@ for runs with this pipeline. Many functions require this object as input.
 It also contains further functionality through methods 
 such as returning the grid of values of halo mass, as given by its
 resolution inputted in the config.
+
+Model choices (e.g. which gas profile) live in ``models``; each model's own
+parameters live in ``params[component][model]`` and are read through
+``cfg.p(component)``, which returns the section of the *selected* model.
 """
 
+import copy
 import dataclasses
+import functools
 import hashlib
+import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable, Mapping
@@ -17,6 +24,7 @@ import yaml
 from colossus.cosmology import cosmology
 
 from .mass_definition import MassDefinition
+from .params import COMPONENTS, ModelParams, build_section
 
 
 __all__ = ["Config", "MassDefinition", "DEFAULT_CONFIG_PATH"]
@@ -26,75 +34,120 @@ DEFAULT_CONFIG_PATH = Path(__file__).resolve().parents[0] / "config.yaml"
 #: Attributes holding lazily built objects, dropped when pickling.
 _CACHED_ATTRS = ("_cosmo", "_mass_definition")
 
+#: Flat gas-profile keys from before model selection existed. Old YAML files
+#: using them are moved into ``params.gas_profile.siegel2025`` with a warning.
+_LEGACY_SIEGEL_KEYS = ("logM_c", "theta_ej", "mu", "gamma", "delta")
+
 
 @dataclass(frozen=True)
 class Config:
     """Every parameter of the model, loaded from ``config.yaml``.
 
-    Build one with :meth:`from_yaml` or :meth:`default`, and derive variants
-    with :meth:`replace`.
+    No default values live in this class: the single source of defaults is the
+    ``config.yaml`` next to this file. Build one with :meth:`default` or
+    :meth:`from_yaml` (a partial file is fine, missing values come from the
+    packaged ``config.yaml``), and derive variants with :meth:`replace`.
     """
 
     # --- matter power spectrum grid ---
-    z: float 
-    m_min: float         # minimum clump mass [Msun/h]
-    N_m: int             # clump-mass integration steps (power of two)
-    M_min: float       # minimum halo mass [Msun/h]
-    M_max: float        # maximum halo mass [Msun/h]
-    N_M: int            # halo-mass integration steps (power of two)
-    k_min: float        # minimum wavenumber [h/Mpc]
-    k_max: float         # maximum wavenumber [h/Mpc]
-    N_k: int              # wavenumber grid points
-    massdef: str      # spherical-overdensity mass definition
+    z: float
+    m_min: float              # minimum clump mass [Msun/h]
+    N_m: int                  # clump-mass integration steps (power of two)
+    M_min: float              # minimum halo mass [Msun/h]
+    M_max: float              # maximum halo mass [Msun/h]
+    N_M: int                  # halo-mass integration steps (power of two)
+    k_min: float              # minimum wavenumber [h/Mpc]
+    k_max: float              # maximum wavenumber [h/Mpc]
+    N_k: int                  # wavenumber grid points
+    massdef: str              # spherical-overdensity mass definition
+
+    # --- model selection ---
+    models: Mapping[str, str]                       # component -> selected model name
+    params: Mapping[str, Mapping[str, ModelParams]] # component -> model -> parameters
 
     # --- clump structure ---
-    Q: float            # clump concentration scaling
-    D: float             # clump spatial-distribution concentration scaling
+    Q: float                  # clump concentration scaling
+    D: float                  # clump spatial-distribution concentration scaling
 
-    # --- gas profile (Siegel et al. 2025, Table 1) ---
-    logM_c: float 
-    theta_ej: float 
-    mu: float 
-    gamma: float 
-    delta: float
+    # --- gas profile (shared by all gas models) ---
     logM_gaslimit: float
 
     # --- stellar profile ---
-    r_star: float      # galaxy scale radius in units of R200c
+    r_star: float             # galaxy scale radius in units of R200c
 
     # --- stellar-to-halo mass relation ---
-    S: float             # overall scaling of the stellar fraction
+    S: float                  # overall scaling of the stellar fraction
 
     # --- convergence power spectrum ---
-    z_min: float 
-    z_max: float 
-    N_z: int               # redshifts sampled when building P(k, z)
-    z_sources: float    
-    l_min: float 
-    l_max: float 
-    N_l: int 
+    z_min: float
+    z_max: float
+    N_z: int                  # redshifts sampled when building P(k, z)
+    z_sources: float          # source-plane redshift for the lensing kernel
+    l_min: float
+    l_max: float
+    N_l: int
 
     # --- angular correlation function ---
-    theta_min: float     
-    theta_max: float  
+    theta_min: float          # minimum angular scale for xi+ [arcsec]
+    theta_max: float          # maximum angular scale for xi+ [arcsec]
     N_theta: int
 
     # --- halo mass function modification: R(M) = (1 + M0/M)**alpha ---
-    logM0: float 
-    alpha: float 
+    logM0: float
+    alpha: float
 
     # --- clump mass function modification: R(m) = (1 + m0/m)**beta ---
-    logm0: float 
-    beta: float 
+    logm0: float
+    beta: float
 
     # --- numerics ---
-    integration_method: str    # "romb" (fixed grid) or "quad" (adaptive)
-    epsrel: float                # relative tolerance when using "quad"
-    processes: int | None        # worker processes; 1 disables multiprocessing
+    integration_method: str   # "romb" (fixed grid) or "quad" (adaptive)
+    epsrel: float             # relative tolerance when using "quad"
+    processes: int | None     # worker processes; 1 disables multiprocessing
 
     # --- cosmology ---
-    cosmo_params: Mapping[str, Any] 
+    cosmo_params: Mapping[str, Any]
 
+    def __post_init__(self) -> None:
+        """Validate the model selection and build every parameter section."""
+        models = dict(self.models)
+        missing = set(COMPONENTS) - set(models)
+        if missing:
+            raise TypeError(
+                f"no model selected for component(s): {', '.join(sorted(missing))}")
+        for component, name in models.items():
+            if component not in COMPONENTS:
+                raise ValueError(
+                    f"unknown model component {component!r}. "
+                    f"Valid: {', '.join(sorted(COMPONENTS))}")
+            if name not in COMPONENTS[component]:
+                raise ValueError(
+                    f"unknown {component} model {name!r}. "
+                    f"Valid: {', '.join(sorted(COMPONENTS[component]))}")
+
+        unknown = set(self.params) - set(COMPONENTS)
+        if unknown:
+            raise TypeError(
+                f"unknown component(s) in params: {', '.join(sorted(unknown))}. "
+                f"Valid: {', '.join(sorted(COMPONENTS))}")
+
+        built: dict[str, dict[str, ModelParams]] = {}
+        for component, table in COMPONENTS.items():
+            raw = dict(self.params.get(component) or {})
+            unknown = set(raw) - set(table)
+            if unknown:
+                raise TypeError(
+                    f"unknown {component} model(s) in params: "
+                    f"{', '.join(sorted(unknown))}. Valid: {', '.join(sorted(table))}")
+            built[component] = {name: build_section(cls, raw.get(name))
+                                for name, cls in table.items()}
+
+        object.__setattr__(self, "models", models)
+        object.__setattr__(self, "params", built)
+
+        # only the selected model of each component is validated
+        for component, name in models.items():
+            built[component][name].validate()
 
     # ------------------------------------------------------------------
     # construction
@@ -107,7 +160,8 @@ class Config:
         Args:
             path: path to the YAML file. ``None`` loads the default config
                 shipped inside the package, so this works from any machine and
-                any working directory.
+                any working directory. The file may be partial: anything it
+                leaves out is taken from the packaged ``config.yaml``.
             **overrides: fields to override after loading.
 
         Raises:
@@ -130,9 +184,15 @@ class Config:
     def from_dict(cls, values: Mapping[str, Any]) -> "Config":
         """Build a config from a mapping, coercing values to the declared types.
 
+        ``values`` is layered over the packaged ``config.yaml`` (nested
+        mappings such as ``params`` and ``cosmo_params`` are merged key by key),
+        so it only needs to hold what differs from the defaults.
+
         Raises:
             TypeError: if ``values`` holds a key that is not a config field.
         """
+        values = _deep_merge(_packaged_defaults(),
+                             _migrate_legacy_keys(dict(values)))
         known = {f.name: f for f in dataclasses.fields(cls)}
         unknown = set(values) - set(known)
         if unknown:
@@ -149,30 +209,66 @@ class Config:
         This is the supported way to vary a parameter: it never mutates the
         receiver, so one config can be shared safely across a parameter sweep
         or a multiprocessing pool.
+
+        Three kinds of keys are understood:
+
+        * a plain field name (``z=0.5``),
+        * a component name, which switches the selected model
+          (``gas_profile="debackere2022"``),
+        * ``"component.parameter"``, which sets a parameter of the model
+          *selected at that point* (``**{"gas_profile.gamma": 1.2}``).
+          Switching the model and setting its parameters can be combined in
+          one call; the switch is applied first.
         
         Args: 
             **overrides: any parameters to be overridden from original.
             
         Example:
-            >>> base = Config(omega_m=0.31, sigma8=0.81)
-            >>> c1 = base.replace(sigma8=0.85)
-            >>> c2 = base.replace(omega_m=0.30, sigma8=0.82)
-            >>> base.sigma8   # base is never mutated
-            0.81
-            >>> c1.sigma8
-            0.85
+            >>> base = Config(z=0.0)
+            >>> c1 = base.replace(z=0.5)
+            >>> c2 = base.replace(gas_profile="debackere2022", **{"gas_profile.gamma": 1.2})
+            >>> base.z   # base is never mutated
+            0.0
+            >>> c1.z
+            0.5
         """
-        return dataclasses.replace(self, **{
-            name: _coerce(_field(type(self), name), value)
-            for name, value in overrides.items()
-        })
+        plain: dict[str, Any] = {}
+        selectors: dict[str, str] = {}
+        dotted: dict[str, Any] = {}
+        for name, value in overrides.items():
+            if "." in name:
+                dotted[name] = value
+            elif name in COMPONENTS:
+                selectors[name] = value
+            else:
+                plain[name] = _coerce(_field(type(self), name), value)
+
+        if selectors:
+            plain["models"] = {**plain.get("models", self.models), **selectors}
+        cfg = dataclasses.replace(self, **plain) if plain else self
+
+        if dotted:
+            params = {c: dict(t) for c, t in cfg.params.items()}
+            for name, value in dotted.items():
+                component, key = name.split(".", 1)
+                if component not in COMPONENTS:
+                    raise TypeError(
+                        f"unknown model component {component!r} in {name!r}. "
+                        f"Valid: {', '.join(sorted(COMPONENTS))}")
+                selected = cfg.models[component]
+                section = params[component][selected]
+                params[component][selected] = build_section(
+                    type(section), {**dataclasses.asdict(section), key: value})
+            cfg = dataclasses.replace(cfg, params=params)
+        return cfg
 
     def vary(self, params: str | Iterable[str],
              values: float | Iterable[float]) -> "Config":
         """Return a copy with one or several named parameters set.
 
         Useful when a sweep produces parallel name/value sequences;
-        :meth:`replace` reads better when the names are literals.
+        :meth:`replace` reads better when the names are literals. Accepts the
+        same keys as :meth:`replace`, including ``"component.parameter"``.
 
         Args:
             params: a parameter name, or a sequence of names.
@@ -187,6 +283,9 @@ class Config:
 
             Several parameters, parallel sequences:
             >>> c = base.vary(["omega_m", "sigma8"], [0.30, 0.82]) 
+
+            A parameter of the selected gas model:
+            >>> c = base.vary("gas_profile.gamma", 1.2)
         """
         if isinstance(params, str):
             return self.replace(**{params: values})
@@ -195,6 +294,26 @@ class Config:
             raise ValueError(
                 f"got {len(params)} parameter name(s) but {len(values)} value(s)")
         return self.replace(**dict(zip(params, values)))
+
+    # ------------------------------------------------------------------
+    # model selection
+    # ------------------------------------------------------------------
+
+    def model(self, component: str) -> str:
+        """Name of the model selected for ``component`` (e.g. ``"siegel2025"``)."""
+        return self.models[component]
+
+    def p(self, component: str) -> ModelParams:
+        """Parameter section of the model selected for ``component``.
+
+        Example:
+            >>> cfg.p("gas_profile").gamma
+        """
+        return self.params[component][self.models[component]]
+
+    def with_model(self, component: str, name: str) -> "Config":
+        """Return a copy with a different model selected for ``component``."""
+        return self.replace(**{component: name})
 
     # ------------------------------------------------------------------
     # derived quantities
@@ -265,6 +384,11 @@ class Config:
         return cached
 
     @property
+    def f_b(self) -> float:
+        """Cosmic baryon fraction Omega_b / Omega_m, derived from the cosmology."""
+        return self.cosmo_params["Ob0"] / self.cosmo_params["Om0"]
+
+    @property
     def M0(self) -> float:
         """Halo mass-function pivot mass, ``10**logM0``."""
         return 10.0 ** self.logM0
@@ -277,11 +401,6 @@ class Config:
     def M_gaslimit(self) -> float:
         """Halo mass below which the gas profile is held fixed."""
         return 10.0 ** self.logM_gaslimit
-
-    @property
-    def M_c(self) -> float:
-        """Characteristic mass of the gas profile."""
-        return 10.0 ** self.logM_c
 
     def k_grid(self, n: int | None = None) -> np.ndarray:
         """Logarithmically spaced wavenumber grid, ``k_min`` to ``k_max``."""
@@ -316,8 +435,21 @@ class Config:
     # ------------------------------------------------------------------
 
     def to_dict(self) -> dict[str, Any]:
-        """The config as a plain dict, excluding cached derived objects."""
-        return {f.name: getattr(self, f.name) for f in dataclasses.fields(self)}
+        """The config as a plain dict, excluding cached derived objects.
+
+        Parameter sections are expanded to plain dicts so the result can be
+        dumped to YAML. All models' sections are included, not just the
+        selected ones, so a saved config reproduces the run exactly.
+        """
+        out = {f.name: getattr(self, f.name) for f in dataclasses.fields(self)}
+        out["models"] = dict(self.models)
+        out["params"] = {
+            component: {name: dataclasses.asdict(section)
+                        for name, section in table.items()}
+            for component, table in self.params.items()
+        }
+        out["cosmo_params"] = dict(self.cosmo_params)
+        return out
 
     def save(self, path: str | Path) -> Path:
         """Write this config to YAML.
@@ -355,6 +487,48 @@ def config_modifier(cfg: Config, param: str | Iterable[str],
     return cfg.vary(param, val)
 
 
+@functools.lru_cache(maxsize=1)
+def _read_packaged_defaults() -> dict[str, Any]:
+    if not DEFAULT_CONFIG_PATH.exists():
+        raise FileNotFoundError(
+            f"packaged default config not found: {DEFAULT_CONFIG_PATH}")
+    with open(DEFAULT_CONFIG_PATH) as stream:
+        return yaml.safe_load(stream.read()) or {}
+
+
+def _packaged_defaults() -> dict[str, Any]:
+    """The contents of the packaged ``config.yaml`` (a fresh copy each call)."""
+    return copy.deepcopy(_read_packaged_defaults())
+
+
+def _deep_merge(base: Mapping[str, Any], override: Mapping[str, Any]) -> dict[str, Any]:
+    """``override`` layered over ``base``; nested mappings merge key by key."""
+    out = dict(base)
+    for key, value in override.items():
+        if isinstance(value, Mapping) and isinstance(out.get(key), Mapping):
+            out[key] = _deep_merge(out[key], value)
+        else:
+            out[key] = value
+    return out
+
+
+def _migrate_legacy_keys(values: dict[str, Any]) -> dict[str, Any]:
+    """Move old flat Siegel keys (logM_c, theta_ej, ...) into the params section."""
+    legacy = {k: values.pop(k) for k in _LEGACY_SIEGEL_KEYS if k in values}
+    if not legacy:
+        return values
+    warnings.warn(
+        f"flat gas-profile keys ({', '.join(legacy)}) are deprecated; put them "
+        f"under params.gas_profile.siegel2025 in the config",
+        DeprecationWarning, stacklevel=3)
+    params = {c: dict(t or {}) for c, t in (values.get("params") or {}).items()}
+    section = params.setdefault("gas_profile", {}).setdefault("siegel2025", {})
+    for key, value in legacy.items():
+        section.setdefault(key, value)   # explicit new-style values win
+    values["params"] = params
+    return values
+
+
 def _field(cls, name: str) -> dataclasses.Field:
     """Look up a dataclass field by name.
 
@@ -383,5 +557,3 @@ def _coerce(spec: dataclasses.Field, value: Any) -> Any:
     if spec.type in ("str", str):
         return str(value)
     return value
-
-
