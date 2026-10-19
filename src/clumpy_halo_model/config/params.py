@@ -13,12 +13,17 @@ profile classes import Config.
 
 from dataclasses import dataclass
 
+
+class ModelParams:
+    """Base class of every model's value storage."""
+    
+
 ###
 # gas profiles
 ###
 
 @dataclass(frozen=True)
-class GasSiegel2025:
+class GasSiegel2025(ModelParams):
     """Cored double power law, Siegel et al. 2025 (Table 1)."""
     logM_c: float
     theta_ej: float
@@ -33,7 +38,7 @@ class GasSiegel2025:
     
     
 @dataclass(frozen=True)    
-class GasDebackere2022:
+class GasDebackere2022(ModelParams):
     """Beta profile + power law + constant density out to r_h (Debackere et al.).
  
     f_gas,500c(m500c) follows eq. 25-26: a tanh turnover at mass ``10**logM_t``
@@ -51,14 +56,14 @@ class GasDebackere2022:
 ###
 
 @dataclass(frozen=True)
-class ShmrMoster2013:
+class ShmrMoster2013(ModelParams):
     """Stellar halo mass relation adopted from Moster et al. 2013.
     Does not have any parameters to be set.
     """
     
 
 @dataclass(frozen=True)
-class ShmrNiemiec2022:
+class ShmrNiemiec2022(ModelParams):
     """Stellar halo mass relation adopted from Niemiec et al. 2022.
     Does not have any parameters to be set.
     """
