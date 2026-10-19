@@ -18,19 +18,38 @@ N_k: 64 #power of 2
 
 massdef: "200c" # !! SHOULD LEAVE THIS BY DEFAULT ON 200m
 
+models:
+  gas_profile: siegel2025          # siegel2025 | debackere2022
+  shmr: moster2013                 # moster2013 | niemiec2022
+ 
+
+params:
+
+  gas_profile:
+    siegel2025:
+      logM_c: 13.6
+      theta_ej: 6
+      mu: 0.9
+      gamma: 2
+      delta: 8
+    debackere2022:
+      gamma: 1.5         # 0 <= gamma <= 3
+      logM_t: 13.0       # turnover mass of f_gas,500c
+      alpha_t: 0.5       # sharpness of the turnover
+      rc_frac: 0.1       # core radius in units of r500c
+      beta_gas: 0.7
+
+  shmr:
+    niemiec2022:
+    moster2013:
+  
+
+
 # factor multiplicator for concentration of clumps
 Q: 1.33
 
 # clump distribution concentration
 D: 1
-
-# Gas profile
-logM_c: 13.6
-theta_ej: 6
-mu: 0.9
-gamma: 2
-delta: 8
-logM_gaslimit: 10
 
 # Stellar profile
 r_star: 0.015 # radius of galaxies times r200

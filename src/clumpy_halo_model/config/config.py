@@ -17,7 +17,7 @@ import yaml
 from colossus.cosmology import cosmology
 
 from .mass_definition import MassDefinition
-
+from .params import COMPONENTS, ModelParams
 
 __all__ = ["Config", "MassDefinition", "DEFAULT_CONFIG_PATH"]
 
@@ -54,7 +54,6 @@ class Config:
     z_min: float 
     z_max: float 
     N_z: int               # redshifts sampled when building P(k, z)
-    z_sources: float    
     l_min: float 
     l_max: float 
     N_l: int 
@@ -65,13 +64,11 @@ class Config:
     N_theta: int
     
     # --- numerics ---
-    integration_method: str    # "romb" (fixed grid) or "quad" (adaptive)
-    epsrel: float                # relative tolerance when using "quad"
     processes: int | None        # worker processes; 1 disables multiprocessing
 
     # --- models ---
-    models: Mapping[str, str] # maps a physical notion to a particular model: gas_profile -> Siegel2025
-    params: Mapping[str, Mapping[str, any]] # maps a physical notion to a set of parameters stored in a dataclass (see parameters.py)
+    models: Mapping[str, str] # maps a component to a particular model: gas_profile -> Siegel2025
+    params: Mapping[str, Mapping[str, any]] # maps a component to a set of parameters stored in a dataclass (see parameters.py)
     
     # --- clump structure ---
     Q: float            # clump concentration scaling
@@ -92,6 +89,48 @@ class Config:
     beta: float 
 
 
+    def __post_init__(self) -> None:
+        """Validate the model selection and build every parameter section."""
+        models = dict(self.models)
+        missing = set(COMPONENTS) - set(models)
+        if missing:
+            raise TypeError(
+                f"no model selected for component(s): {', '.join(sorted(missing))}"
+            ) 
+        for component, model in models.items():
+            if component not in COMPONENTS:
+                raise ValueError(
+                    f"unknown model component {component}"
+                )
+            if model not in COMPONENTS[component]:
+                raise ValueError(
+                    f"unknown model {model}"
+                )
+                
+        built: dict[str, dict[str, ModelParams]] = {}
+        for component, table in COMPONENTS.items():
+            built[component] = {}
+            for name, cls in table.items():
+                raw = self.params[component][name]
+                if isinstance(raw, cls):
+                    built[component][name] = raw      
+                else:
+                    built[component][name] = cls(**raw or {}) # pass empty dict if model contains no parameters          
+            
+        # the class is frozen, so a normal `self.params = built` would raise an error
+        object.__setattr__(self, "params", built)        
+                
+               
+    def p(self, component: str) -> ModelParams:
+        """Parameter section of the model selected for ``component``.
+ 
+        Example:
+            >>> cfg.p("gas_profile").gamma
+        """
+        return self.params[component][self.models[component]]
+    
+        
+        
     # ------------------------------------------------------------------
     # construction
     # ------------------------------------------------------------------
