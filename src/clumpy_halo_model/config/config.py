@@ -34,7 +34,10 @@ class Config:
     Build one with :meth:`from_yaml` or :meth:`default`, and derive variants
     with :meth:`replace`.
     """
-
+    
+    # --- cosmology ---
+    cosmo_params: Mapping[str, Any] 
+    
     # --- matter power spectrum grid ---
     z: float 
     m_min: float         # minimum clump mass [Msun/h]
@@ -46,6 +49,25 @@ class Config:
     k_max: float         # maximum wavenumber [h/Mpc]
     N_k: int              # wavenumber grid points
     massdef: str      # spherical-overdensity mass definition
+
+    # --- convergence power spectrum ---
+    z_min: float 
+    z_max: float 
+    N_z: int               # redshifts sampled when building P(k, z)
+    z_sources: float    
+    l_min: float 
+    l_max: float 
+    N_l: int 
+
+    # --- angular correlation function ---
+    theta_min: float     
+    theta_max: float  
+    N_theta: int
+    
+    # --- numerics ---
+    integration_method: str    # "romb" (fixed grid) or "quad" (adaptive)
+    epsrel: float                # relative tolerance when using "quad"
+    processes: int | None        # worker processes; 1 disables multiprocessing
 
     # --- models ---
     models: Mapping[str, str] # maps a physical notion to a particular model: gas_profile -> Siegel2025
@@ -61,20 +83,6 @@ class Config:
     # --- stellar-to-halo mass relation ---
     S: float             # overall scaling of the stellar fraction
 
-    # --- convergence power spectrum ---
-    z_min: float 
-    z_max: float 
-    N_z: int               # redshifts sampled when building P(k, z)
-    z_sources: float    
-    l_min: float 
-    l_max: float 
-    N_l: int 
-
-    # --- angular correlation function ---
-    theta_min: float     
-    theta_max: float  
-    N_theta: int
-
     # --- halo mass function modification: R(M) = (1 + M0/M)**alpha ---
     logM0: float 
     alpha: float 
@@ -82,14 +90,6 @@ class Config:
     # --- clump mass function modification: R(m) = (1 + m0/m)**beta ---
     logm0: float 
     beta: float 
-
-    # --- numerics ---
-    integration_method: str    # "romb" (fixed grid) or "quad" (adaptive)
-    epsrel: float                # relative tolerance when using "quad"
-    processes: int | None        # worker processes; 1 disables multiprocessing
-
-    # --- cosmology ---
-    cosmo_params: Mapping[str, Any] 
 
 
     # ------------------------------------------------------------------
