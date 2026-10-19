@@ -36,67 +36,64 @@ class Config:
     """
 
     # --- matter power spectrum grid ---
-    z: float = 0.0
-    m_min: float = 1e3        # minimum clump mass [Msun/h]
-    N_m: int = 64             # clump-mass integration steps (power of two)
-    M_min: float = 1e3        # minimum halo mass [Msun/h]
-    M_max: float = 1e16       # maximum halo mass [Msun/h]
-    N_M: int = 256            # halo-mass integration steps (power of two)
-    k_min: float = 1e-1       # minimum wavenumber [h/Mpc]
-    k_max: float = 1e4        # maximum wavenumber [h/Mpc]
-    N_k: int = 64             # wavenumber grid points
-    massdef: str = "200c"     # spherical-overdensity mass definition
+    z: float 
+    m_min: float         # minimum clump mass [Msun/h]
+    N_m: int             # clump-mass integration steps (power of two)
+    M_min: float       # minimum halo mass [Msun/h]
+    M_max: float        # maximum halo mass [Msun/h]
+    N_M: int            # halo-mass integration steps (power of two)
+    k_min: float        # minimum wavenumber [h/Mpc]
+    k_max: float         # maximum wavenumber [h/Mpc]
+    N_k: int              # wavenumber grid points
+    massdef: str      # spherical-overdensity mass definition
 
     # --- clump structure ---
-    Q: float = 1.33           # clump concentration scaling
-    D: float = 1.0            # clump spatial-distribution concentration scaling
+    Q: float            # clump concentration scaling
+    D: float             # clump spatial-distribution concentration scaling
 
     # --- gas profile (Siegel et al. 2025, Table 1) ---
-    logM_c: float = 13.6
-    theta_ej: float = 6.0
-    mu: float = 0.9
-    gamma: float = 2.0
-    delta: float = 8.0
-    logM_gaslimit: float = 10.0
+    logM_c: float 
+    theta_ej: float 
+    mu: float 
+    gamma: float 
+    delta: float
+    logM_gaslimit: float
 
     # --- stellar profile ---
-    r_star: float = 0.015     # galaxy scale radius in units of R200c
+    r_star: float      # galaxy scale radius in units of R200c
 
     # --- stellar-to-halo mass relation ---
-    S: float = 1.0            # overall scaling of the stellar fraction
+    S: float             # overall scaling of the stellar fraction
 
     # --- convergence power spectrum ---
-    z_min: float = 0.0
-    z_max: float = 2.0
-    N_z: int = 6              # redshifts sampled when building P(k, z)
-    z_sources: float = 2.0    # source-plane redshift for the lensing kernel
-    l_min: float = 1e1
-    l_max: float = 1e6
-    N_l: int = 256
+    z_min: float 
+    z_max: float 
+    N_z: int               # redshifts sampled when building P(k, z)
+    z_sources: float    
+    l_min: float 
+    l_max: float 
+    N_l: int 
 
     # --- angular correlation function ---
-    theta_min: float = 1.0    # minimum angular scale for xi+ [arcsec]
-    theta_max: float = 1e3    # maximum angular scale for xi+ [arcsec]
-    N_theta: int = 10
+    theta_min: float     
+    theta_max: float  
+    N_theta: int
 
     # --- halo mass function modification: R(M) = (1 + M0/M)**alpha ---
-    logM0: float = 9.0
-    alpha: float = 0.0
+    logM0: float 
+    alpha: float 
 
     # --- clump mass function modification: R(m) = (1 + m0/m)**beta ---
-    logm0: float = 9.0
-    beta: float = 0.0
+    logm0: float 
+    beta: float 
 
     # --- numerics ---
-    integration_method: str = "romb"   # "romb" (fixed grid) or "quad" (adaptive)
-    epsrel: float = 1e-4               # relative tolerance when using "quad"
-    processes: int | None = None       # worker processes; 1 disables multiprocessing
+    integration_method: str    # "romb" (fixed grid) or "quad" (adaptive)
+    epsrel: float                # relative tolerance when using "quad"
+    processes: int | None        # worker processes; 1 disables multiprocessing
 
     # --- cosmology ---
-    cosmo_params: Mapping[str, Any] = field(default_factory=lambda: {
-        "flat": True, "H0": 70, "Om0": 0.2793,
-        "Ob0": 0.0463, "sigma8": 0.821, "ns": 0.972,
-    })
+    cosmo_params: Mapping[str, Any] 
 
 
     # ------------------------------------------------------------------
