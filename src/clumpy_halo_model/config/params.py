@@ -14,10 +14,15 @@ profile classes import Config.
 from dataclasses import dataclass
 
 __all__ = [
+    # Profiles
+    "PointMass",
     "GasSiegel2025",
     "GasDebackere2022",
-    "ShmrMoster2013",
-    "ShmrNiemiec2022",
+    "StarSiegel2025",
+    # SHMR
+    "Moster2013",
+    "Moster2013Centrals",
+    "Niemiec2022",
 ]
 
 
@@ -26,8 +31,14 @@ class ModelParams:
     
 
 ###
-# gas profiles
+# profiles
 ###
+
+@dataclass(frozen=True)
+class PointMass(ModelParams):
+    """Point mass profile
+    Does not have any parameters to set"""
+    
 
 @dataclass(frozen=True)
 class GasSiegel2025(ModelParams):
@@ -57,20 +68,34 @@ class GasDebackere2022(ModelParams):
     rc_frac: float      # core radius in units of r500c
     beta: float     # beta-profile slope
 
+
+@dataclass(frozen=True)
+class StarSiegel2025(ModelParams):
+    """truncated power law for stellar profiles
+    """
+    r_star: float
+
         
 ###
 # stellar halo mass relations (SHMR)
 ###
 
 @dataclass(frozen=True)
-class ShmrMoster2013(ModelParams):
+class Moster2013(ModelParams):
     """Stellar halo mass relation adopted from Moster et al. 2013.
     Does not have any parameters to be set.
     """
     
 
 @dataclass(frozen=True)
-class ShmrNiemiec2022(ModelParams):
+class Moster2013Centrals(ModelParams):
+    """Stellar halo mass relation for centrals adopted from Moster et al. 2013.
+    Does not have any parameters to be set.
+    """
+    
+
+@dataclass(frozen=True)
+class Niemiec2022(ModelParams):
     """Stellar halo mass relation adopted from Niemiec et al. 2022.
     Does not have any parameters to be set.
     """

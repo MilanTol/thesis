@@ -77,12 +77,6 @@ class Config:
     Q: float            # clump concentration scaling
     D: float             # clump spatial-distribution concentration scaling
 
-    # --- stellar profile ---
-    r_star: float      # galaxy scale radius in units of R200c
-
-    # --- stellar-to-halo mass relation ---
-    S: float             # overall scaling of the stellar fraction
-
     # --- halo mass function modification: R(M) = (1 + M0/M)**alpha ---
     logM0: float 
     alpha: float 
@@ -94,7 +88,7 @@ class Config:
 
     def __post_init__(self) -> None:
         """Validate the model selection and build every parameter section."""
-        from .registry import COMPONENTS # by importing after __init__ we prevent circular import
+        from .registry import COMPONENTS, MODELS # by importing after __init__ we prevent circular import
         
         models = dict(self.models)
         missing = set(COMPONENTS) - set(models)
@@ -107,16 +101,17 @@ class Config:
                 raise ValueError(
                     f"unknown model component {component}"
                 )
-            if model not in COMPONENTS[component]:
+            if model not in MODELS[COMPONENTS[component]]:
                 raise ValueError(
                     f"unknown model {model}"
                 )
                 
         built: dict[str, dict[str, ModelParams]] = {}
-        for component, table in COMPONENTS.items():
+        
+        for component, obj in COMPONENTS.items():
             built[component] = {}
-            for name, (cls, _) in table.items(): # _ loads the implemented class
-                raw = self.params[component][name]
+            for name, (cls, _) in MODELS[obj].items(): # _ loads the implemented class
+                raw = self.params[obj][name]
                 if isinstance(raw, cls):
                     built[component][name] = raw      
                 else:

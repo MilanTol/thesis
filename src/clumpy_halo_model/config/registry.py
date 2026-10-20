@@ -4,23 +4,40 @@ to prevent circular imports.
 """
 
 from .params import *
-# gas profiles
+
+# profiles
+from ..halos.profile.profile import Profile
 from ..halos.profile.models.gas_cored_powerlaw import ProfileGasCoredPowerLaw
 from ..halos.profile.models.gas_debackere import ProfileGasDebackere
+from ..halos.profile.models.pointmass import ProfilePointMass
+from ..halos.profile.models.stellar_truncated_powerlaw import ProfileStellarTruncatedPowerLaw
+
 # shmr
-from ..halos.shmr.models.moster2013 import SHMRMoster2013
+from ..halos.shmr.shmr import SHMR
+from ..halos.shmr.models.moster2013 import SHMRMoster2013, SHMRMoster2013Centrals
 from ..halos.shmr.models.niemiec2022 import SMHRNiemiec2022
 
 
-    
+# tells what kind of object belongs to a component
 COMPONENTS = {
-    "gas_profile": {
-        "siegel2025":    (GasSiegel2025, ProfileGasCoredPowerLaw),
-        "debackere2022": (GasDebackere2022, ProfileGasDebackere),
+    "gas_profile": "profile",
+    "star_profile": "profile",
+    "shmr": "shmr",
+    "shmr_centrals": "shmr",
+}
+
+# tells what models are available for each object
+MODELS = {
+    "profile": {
+        "pointmass": (PointMass, ProfilePointMass),
+        "gassiegel2025":    (GasSiegel2025, ProfileGasCoredPowerLaw),
+        "gasdebackere2022": (GasDebackere2022, ProfileGasDebackere),
+        "starsiegel2025": (StarSiegel2025, ProfileStellarTruncatedPowerLaw)
     },
     "shmr": {
-        "moster2013": (ShmrMoster2013, SHMRMoster2013),
-        "niemiec2022": (ShmrNiemiec2022, SMHRNiemiec2022),
+        "moster2013": (Moster2013, SHMRMoster2013),
+        "moster2013centrals": (Moster2013, SHMRMoster2013Centrals),
+        "niemiec2022": (Niemiec2022, SMHRNiemiec2022),
     },
 }
     

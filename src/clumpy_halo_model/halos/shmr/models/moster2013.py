@@ -60,7 +60,7 @@ class SHMRMoster2013(SHMR):
         M1 = 10**logM1
         M1_inv = 1/M1
         f_star = 2*N / ( (M*M1_inv)**(-beta) + (M*M1_inv)**(gamma) )
-        return self.cfg.S*f_star
+        return f_star
     
     
    
@@ -120,4 +120,4 @@ class SHMRMoster2013Centrals(SHMR):
         M1 = 10**logM1
         M1_inv = 1/M1
         f_star = 2*N / ( (M*M1_inv)**(-beta) + (M*M1_inv)**(gamma - gamma_central) )
-        return self.cfg.S*f_star
+        return f_star

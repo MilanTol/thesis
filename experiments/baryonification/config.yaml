@@ -18,46 +18,6 @@ N_k: 64 #power of 2
 
 massdef: "200c" # !! SHOULD LEAVE THIS BY DEFAULT ON 200m
 
-models:
-  gas_profile: siegel2025           # siegel2025 | debackere2022
-  shmr: moster2013                 # moster2013 | niemiec2022
- 
-
-params:
-
-  gas_profile:
-    siegel2025:
-      logM_c: 13.6
-      theta_ej: 6
-      mu: 0.9
-      gamma: 2
-      delta: 8
-    debackere2022:
-      gamma: 1.5         # 0 <= gamma <= 3
-      logM_t: 13.0       # turnover mass of f_gas,500c
-      alpha_t: 0.5       # sharpness of the turnover
-      rc_frac: 0.1       # core radius in units of r500c
-      beta: 0.7
-
-  shmr:
-    niemiec2022:
-    moster2013:
-  
-
-logM_gaslimit: 10
-
-# factor multiplicator for concentration of clumps
-Q: 1.33
-
-# clump distribution concentration
-D: 1
-
-# Stellar profile
-r_star: 0.015 # radius of galaxies times r200
-
-# SHMR
-S: 1 #factor before stellar fraction # THIS DOESNT WORK YET POWER GETS TAKEN AWAY AT LARGE SCALES
-
 # config convergence power spectrum
 z_min: 0
 z_max: 2
@@ -80,6 +40,53 @@ cosmo_params:
   sigma8: 0.821
   ns: 0.972
 
+
+models:
+  gas_profile: gassiegel2025           # gassiegel2025 | gasdebackere2022
+  star_profile: starsiegel2025          # pointmass | starsiegel2025 
+  shmr: moster2013                 # moster2013 | niemiec2022
+  shmr_centrals: moster2013centrals # moster2013centrals
+ 
+
+params:
+
+  profile:
+
+    pointmass:
+
+    gassiegel2025:
+      logM_c: 13.6
+      theta_ej: 6
+      mu: 0.9
+      gamma: 2
+      delta: 8
+
+    gasdebackere2022:
+      gamma: 1.5         # 0 <= gamma <= 3
+      logM_t: 13.0       # turnover mass of f_gas,500c
+      alpha_t: 0.5       # sharpness of the turnover
+      rc_frac: 0.1       # core radius in units of r500c
+      beta: 0.7
+    
+    starsiegel2025:
+      r_star: 0.015 # radius of galaxies times r200
+
+    
+
+  shmr:
+    moster2013:
+    moster2013centrals:
+    niemiec2022:
+  
+
+logM_gaslimit: 10
+
+# factor multiplicator for concentration of clumps
+Q: 1.33
+
+# clump distribution concentration
+D: 1
+
 # halo mass function parameters
 logM0: 9 
 alpha: 0
@@ -88,6 +95,7 @@ alpha: 0
 logm0: 9
 beta: 0
 
+
 # max number of processes
-processes: 16
+processes: 1
 

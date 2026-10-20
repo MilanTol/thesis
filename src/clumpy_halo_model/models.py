@@ -14,7 +14,7 @@ Two standard setups are provided:
 """
 
 from .config.config import Config
-from .config.registry import COMPONENTS
+from .config.registry import COMPONENTS, MODELS
 
 from .halos.mass_func.models.tinker2008 import MassFuncTinker2008_mod
 from .halos.clump_mass_func.models.giocoli2010 import ClumpMassGiocoli2010_mod
@@ -152,17 +152,16 @@ def with_baryons(cfg: Config) -> MatterPower:
     parts = Ingredients.build(cfg)
     concentration = parts.concentration
 
-    shmr = SHMRMoster2013(cfg, concentration)
-    shmr_central = SHMRMoster2013Centrals(cfg, concentration)
-    stellar_profile = ProfileStellarTruncatedPowerLaw(cfg, concentration)
-    gas_profile = COMPONENTS['gas_profile'][cfg.models['gas_profile']][1](cfg, shmr, concentration)
-    # gas_profile = ProfileGasCoredPowerLaw(cfg, shmr, concentration)
+    shmr = MODELS[COMPONENTS['shmr']][cfg.models['shmr']][1](cfg, concentration)
+    shmr_centrals = MODELS[COMPONENTS['shmr_centrals']][cfg.models['shmr_centrals']][1](cfg, concentration)
+    stellar_profile = MODELS[COMPONENTS['star_profile']][cfg.models['star_profile']][1](cfg, concentration)
+    gas_profile = MODELS[COMPONENTS['gas_profile']][cfg.models['gas_profile']][1](cfg, shmr, concentration)
 
     smooth_profile = CompositeProfile(
         parts.smooth_dm_profile, stellar_profile, gas_profile,
         weights=[
             SmoothDarkMatterWeight(parts.clump_mass_func),
-            CentralStarWeight(shmr_central),
+            CentralStarWeight(shmr_centrals),
             GasWeight(shmr),
         ],
         # Only the dark matter has its mass argument rescaled: it is evaluated
@@ -181,7 +180,7 @@ def with_baryons(cfg: Config) -> MatterPower:
         parts.clump_dm_profile, stellar_profile,
         weights=[
             ClumpDarkMatterWeight(),
-            ClumpStarWeight(shmr, shmr_central),
+            ClumpStarWeight(shmr, shmr_centrals),
         ],
     )
 
@@ -195,7 +194,7 @@ def with_baryons(cfg: Config) -> MatterPower:
     )
     # Kept accessible so callers can inspect the baryonic ingredients.
     model.shmr = shmr
-    model.shmr_central = shmr_central
+    model.shmr_central = shmr_centrals
     model.stellar_profile = stellar_profile
     model.gas_profile = gas_profile
     return model
