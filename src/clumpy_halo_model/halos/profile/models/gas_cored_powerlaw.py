@@ -28,7 +28,8 @@ class ProfileGasCoredPowerLaw(Profile):
     def __init__(self, cfg: Config, shmr: SHMR, c: Concentration):
         self.cfg = cfg
         self._shmr = shmr
-        self.c = c
+        self.p = cfg.p("gas_profile")
+        
 
         rmin, rmax, Nr = 1e-4, 1e3, 512
         self.M_gaslimit = 10**(cfg.logM_gaslimit)
@@ -86,8 +87,8 @@ class ProfileGasCoredPowerLaw(Profile):
         
     def beta(self, M200):
         # See Table 1 Siegel et al. 2025
-        M_c = 10**self.cfg.logM_c
-        mu = self.cfg.mu
+        M_c = 10**self.p.logM_c
+        mu = self.p.mu
         m = (M200 / M_c)**mu
         return 3*m / (1 + m)    
         
@@ -101,9 +102,9 @@ class ProfileGasCoredPowerLaw(Profile):
             mass_converter = NFWMassConverter(self.cfg)
             M = mass_converter(self.cfg.massdef, "200c", M, self.c(cosmo, M, z), z)
                     
-        theta_ej = self.cfg.theta_ej # see Table 1 Siegel et al. 2025
-        gamma = self.cfg.gamma
-        delta = self.cfg.delta
+        theta_ej = self.p.theta_ej # see Table 1 Siegel et al. 2025
+        gamma = self.p.gamma
+        delta = self.p.delta
                        
         r_core = 0.1*self.R200(M, z)
         r_ej = theta_ej * self.R200(M, z)

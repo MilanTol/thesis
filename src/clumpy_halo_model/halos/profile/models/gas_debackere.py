@@ -30,8 +30,7 @@ class ProfileGasDebackere(Profile):
         self.cfg = cfg
         self._shmr = shmr
         self.c = c
-        self.r_core_frac = 0.21
-        self.beta = 0.72
+        self.p = cfg.p("gas_profile")
 
         rmin, rmax, Nr = 1e-4, 1e3, 512
         self.M_gaslimit = 10**(cfg.logM_gaslimit)
@@ -92,19 +91,19 @@ class ProfileGasDebackere(Profile):
     # ---------- observational fit parameters (Debackere Sec. 3) ----------
     def f_gas_500(self, M500, M_h, z):
         # eq. 25: sigmoid-like fit, -> f_b for M -> inf, -> 0 for M -> 0
-        f_b = self.cfg.cosmo.Ob / self.cfg.cosmo.Om  # Omega_b / Omega_m
-        m_t = 10**self.cfg.logM_t  # turnover mass
-        alpha = self.cfg.alpha_t  # sharpness of the turnover
+        f_b = self.cfg.cosmo.Ob(z) / self.cfg.cosmo.Om(z)  # Omega_b / Omega_m
+        m_t = 10**self.p.logM_t  # turnover mass
+        alpha = self.p.alpha_t  # sharpness of the turnover
         f_sig = 0.5 * f_b * (1 + np.tanh(np.log10(M500 / m_t) / alpha))
         # eq. 26: f_gas <= f_b - f_star,500c
         # ASSUMPTION: all stellar mass of the halo sits inside r500c
         # this is maybe not correct when clumps also contain stars?
-        f_star = self._shmr.shmr(M_h, z) / M500  
+        f_star = self._shmr.shmr(self.cfg.cosmo, M_h, z) / M500  
         return np.minimum(f_sig, np.maximum(f_b - f_star, 0.0))
 
     # ---------- normalisation (eq. 15) ----------
-    def rho_0(self, M500, r500, rc, beta, z):
-        fgas = self.f_gas_500(M500)
+    def rho_0(self, M500, r500, rc, beta, M_h, z):
+        fgas = self.f_gas_500(M500, M_h, z)
         F = hyp2f1(1.5, 1.5 * beta, 2.5, -(r500 / rc)**2)
         return 500 * self._rho_ref(z, "c") * fgas / F
 
@@ -120,10 +119,10 @@ class ProfileGasDebackere(Profile):
         """
         Radius where gas + stars = f_b * M_h.
         """
-        f_b = self.cfg.f_b
+        f_b = self.cfg.cosmo.Ob(z) / self.cfg.cosmo.Om(z)
         M_star = self._shmr.shmr(self.cfg.cosmo, M_h, z)  
         M_gas_target = f_b * M_h - M_star
-        m500 = self.f_gas_500(M500) * M500
+        m500 = self.f_gas_500(M500, M_h, z) * M500
         m200m = m500 + self._m_powerlaw(rho500, r500, gamma, r500, r200m)
         rho_out = rho500 * (r200m / r500)**(-gamma)
 
@@ -145,19 +144,19 @@ class ProfileGasDebackere(Profile):
         hot gas density in real space (Msun / Mpc^3), M in cfg.massdef
         """
         r = np.atleast_1d(np.asarray(r, dtype=float))
-        gamma = self.cfg.gamma  # 0 <= gamma <= 3
+        gamma = self.p.gamma # 0 <= gamma <= 3
 
         M500 = self._convert(cosmo, M, z, "500c")
         M200m = self._convert(cosmo, M, z, "200m")
         r500 = self.R_delta(M500, 500, "c", z)
         r200m = self.R_delta(M200m, 200, "m", z)
 
-        rc = self.r_core_frac*r500
-        rho0 = self.rho_0(M500, r500, rc, self.beta, z)
-        rho500 = rho0 * (1 + (r500 / rc)**2)**(-1.5 * self.beta)
+        rc = self.p.rc_frac*r500
+        rho0 = self.rho_0(M500, r500, rc, self.p.beta, M, z)
+        rho500 = rho0 * (1 + (r500 / rc)**2)**(-1.5 * self.p.beta)
         r_h = self.r_halo(M, M500, r500, r200m, rho500, gamma, z)
 
-        inner = rho0 * (1 + (r / rc)**2)**(-1.5 * self.beta)
+        inner = rho0 * (1 + (r / rc)**2)**(-1.5 * self.p.beta)
         middle = rho500 * (r / r500)**(-gamma)
         outer = rho500 * (r200m / r500)**(-gamma)
 
@@ -165,4 +164,4 @@ class ProfileGasDebackere(Profile):
             r < r500, inner,
             np.where(r < min(r200m, r_h), middle,
                      np.where(r < r_h, outer, 0.0))
-        )
+        ) 

@@ -13,6 +13,13 @@ profile classes import Config.
 
 from dataclasses import dataclass
 
+__all__ = [
+    "GasSiegel2025",
+    "GasDebackere2022",
+    "ShmrMoster2013",
+    "ShmrNiemiec2022",
+]
+
 
 class ModelParams:
     """Base class of every model's value storage."""
@@ -48,7 +55,7 @@ class GasDebackere2022(ModelParams):
     logM_t: float      # turnover mass of f_gas,500c [log10 Msun/h]
     alpha_t: float      # sharpness of the turnover
     rc_frac: float      # core radius in units of r500c
-    beta_gas: float     # beta-profile slope
+    beta: float     # beta-profile slope
 
         
 ###
@@ -69,16 +76,5 @@ class ShmrNiemiec2022(ModelParams):
     """
 
 
-    
-COMPONENTS = {
-    "gas_profile": {
-        "siegel2025": GasSiegel2025,
-        "debackere2022": GasDebackere2022,
-    },
-    "shmr": {
-        "moster2013": ShmrMoster2013,
-        "niemiec2022": ShmrNiemiec2022, 
-    }
-}    
-    
+
     

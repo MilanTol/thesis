@@ -17,7 +17,7 @@ import yaml
 from colossus.cosmology import cosmology
 
 from .mass_definition import MassDefinition
-from .params import COMPONENTS, ModelParams
+from .params import ModelParams
 
 __all__ = ["Config", "MassDefinition", "DEFAULT_CONFIG_PATH"]
 
@@ -70,6 +70,9 @@ class Config:
     models: Mapping[str, str] # maps a component to a particular model: gas_profile -> Siegel2025
     params: Mapping[str, Mapping[str, any]] # maps a component to a set of parameters stored in a dataclass (see parameters.py)
     
+    # --- gas ---
+    logM_gaslimit: float
+    
     # --- clump structure ---
     Q: float            # clump concentration scaling
     D: float             # clump spatial-distribution concentration scaling
@@ -91,6 +94,8 @@ class Config:
 
     def __post_init__(self) -> None:
         """Validate the model selection and build every parameter section."""
+        from .registry import COMPONENTS # by importing after __init__ we prevent circular import
+        
         models = dict(self.models)
         missing = set(COMPONENTS) - set(models)
         if missing:
@@ -110,7 +115,7 @@ class Config:
         built: dict[str, dict[str, ModelParams]] = {}
         for component, table in COMPONENTS.items():
             built[component] = {}
-            for name, cls in table.items():
+            for name, (cls, _) in table.items(): # _ loads the implemented class
                 raw = self.params[component][name]
                 if isinstance(raw, cls):
                     built[component][name] = raw      

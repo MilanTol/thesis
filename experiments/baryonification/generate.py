@@ -19,8 +19,8 @@ cfg = Config.from_yaml(root/"experiments/baryonification/config.yaml")
 
 
 # Construct a DMO power spectrum:
-DMO_POWER = dark_matter_only(cfg)
 BARYON_POWER = with_baryons(cfg)
+DMO_POWER = dark_matter_only(cfg)
 
 
 # extract values

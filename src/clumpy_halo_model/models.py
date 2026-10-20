@@ -14,23 +14,30 @@ Two standard setups are provided:
 """
 
 from .config.config import Config
-from .halos.bias.models.tinker2010 import BiasTinker2010
+from .config.registry import COMPONENTS
+
+from .halos.mass_func.models.tinker2008 import MassFuncTinker2008_mod
 from .halos.clump_mass_func.models.giocoli2010 import ClumpMassGiocoli2010_mod
+
 from .halos.concentration.models.neto2007 import ConcentrationNeto2007
 from .halos.concentration.models.scaled_clumps import ConcentrationScaledClumps
 from .halos.concentration.models.scaled_distribution import ConcentrationScaledDistribution
-from .halos.mass_func.models.tinker2008 import MassFuncTinker2008_mod
+
 from .halos.profile.models.gas_cored_powerlaw import ProfileGasCoredPowerLaw
 from .halos.profile.models.nfw import ProfileNFW
 from .halos.profile.models.stellar_truncated_powerlaw import (
     ProfileStellarTruncatedPowerLaw)
+
 from .halos.profile.profile import CompositeProfile
 from .halos.profile.weights import (
     CentralStarWeight, ClumpDarkMatterWeight, ClumpStarWeight, GasWeight,
     SmoothDarkMatterWeight, SmoothMassWeight, Unity)
+
 from .halos.r_vir.models.SO import R_virSO
+
 from .halos.shmr.models.moster2013 import (
     SHMRMoster2013, SHMRMoster2013Centrals)
+
 from .power_spectra.matter_power import MatterPower
 
 
@@ -49,7 +56,6 @@ class Ingredients:
         concentration_clumps: concentration of clumps themselves.
         concentration_distribution: concentration of the clump spatial distribution.
         mass_func: halo mass function.
-        bias: linear halo bias.
         clump_mass_func: clump mass function.
         r_vir: virial-radius relation.
     """
@@ -59,7 +65,6 @@ class Ingredients:
     concentration_clumps: ConcentrationScaledClumps
     concentration_distribution: ConcentrationScaledDistribution
     mass_func: MassFuncTinker2008_mod
-    bias: BiasTinker2010
     clump_mass_func: ClumpMassGiocoli2010_mod
     r_vir: R_virSO
 
@@ -74,7 +79,6 @@ class Ingredients:
             concentration_distribution=ConcentrationScaledDistribution(
                 cfg, concentration),
             mass_func=MassFuncTinker2008_mod(cfg),
-            bias=BiasTinker2010(cfg),
             clump_mass_func=ClumpMassGiocoli2010_mod(cfg),
             r_vir=R_virSO(cfg),
         )
@@ -124,7 +128,6 @@ def dark_matter_only(cfg: Config) -> MatterPower:
     return MatterPower(
         cfg,
         mass_func=parts.mass_func,
-        bias=parts.bias,
         clump_mass_func=parts.clump_mass_func,
         smooth_profile=smooth_profile,
         clump_profile=parts.clump_dm_profile,
@@ -152,7 +155,8 @@ def with_baryons(cfg: Config) -> MatterPower:
     shmr = SHMRMoster2013(cfg, concentration)
     shmr_central = SHMRMoster2013Centrals(cfg, concentration)
     stellar_profile = ProfileStellarTruncatedPowerLaw(cfg, concentration)
-    gas_profile = ProfileGasCoredPowerLaw(cfg, shmr, concentration)
+    gas_profile = COMPONENTS['gas_profile'][cfg.models['gas_profile']][1](cfg, shmr, concentration)
+    # gas_profile = ProfileGasCoredPowerLaw(cfg, shmr, concentration)
 
     smooth_profile = CompositeProfile(
         parts.smooth_dm_profile, stellar_profile, gas_profile,
@@ -184,7 +188,6 @@ def with_baryons(cfg: Config) -> MatterPower:
     model = MatterPower(
         cfg,
         mass_func=parts.mass_func,
-        bias=parts.bias,
         clump_mass_func=parts.clump_mass_func,
         smooth_profile=smooth_profile,
         clump_profile=clump_profile,

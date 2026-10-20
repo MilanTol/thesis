@@ -8,7 +8,6 @@ from ..halos.profile.profile import Profile
 from ..halos.shmr.shmr import SHMR
 from ..halos.mass_func.mass_func import MassFunc
 from ..halos.clump_mass_func.clump_mass_func import ClumpMassFunc
-from ..halos.bias.bias import Bias
 from ..config.config import Config
 from ..algorithms.integration import MassIntegral
 from ..algorithms.grids import tabulate_grid, LogInterpolator2D
@@ -28,7 +27,6 @@ class MatterPower:
                  cfg: Config,
                  mass_func: MassFunc,
                  smooth_profile: Profile,
-                 bias: Bias,
                  clump_mass_func: ClumpMassFunc,
                  clump_profile: Profile,
                  clump_distribution: Profile,
@@ -40,8 +38,6 @@ class MatterPower:
         :type cfg: Config
         :param mass_func: halo mass fucntion
         :type mass_func: MassFunc
-        :param bias: bias
-        :type bias: Bias
         :param smooth_profile: smooth profile
         :type smooth_profile: Profile
         :param clump_mass_func: Description
@@ -55,7 +51,6 @@ class MatterPower:
         self.cfg = cfg
         self.mass_func = mass_func
         self.smooth_profile = smooth_profile
-        self.bias = bias
         self.clump_mass_func = clump_mass_func
         self.clump_profile = clump_profile
         self.clump_distribution = clump_distribution
