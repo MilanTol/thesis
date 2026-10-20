@@ -152,10 +152,10 @@ def with_baryons(cfg: Config) -> MatterPower:
     parts = Ingredients.build(cfg)
     concentration = parts.concentration
 
-    shmr = MODELS[COMPONENTS['shmr']][cfg.models['shmr']][1](cfg, concentration)
-    shmr_centrals = MODELS[COMPONENTS['shmr_centrals']][cfg.models['shmr_centrals']][1](cfg, concentration)
-    stellar_profile = MODELS[COMPONENTS['star_profile']][cfg.models['star_profile']][1](cfg, concentration)
-    gas_profile = MODELS[COMPONENTS['gas_profile']][cfg.models['gas_profile']][1](cfg, shmr, concentration)
+    shmr = MODELS[COMPONENTS['shmr']][cfg.models['shmr']][1](cfg=cfg, c=concentration)
+    shmr_centrals = MODELS[COMPONENTS['shmr_centrals']][cfg.models['shmr_centrals']][1](cfg=cfg, c=concentration)
+    stellar_profile = MODELS[COMPONENTS['star_profile']][cfg.models['star_profile']][1](cfg=cfg, c=concentration)
+    gas_profile = MODELS[COMPONENTS['gas_profile']][cfg.models['gas_profile']][1](cfg=cfg, shmr=shmr, c=concentration)
 
     smooth_profile = CompositeProfile(
         parts.smooth_dm_profile, stellar_profile, gas_profile,

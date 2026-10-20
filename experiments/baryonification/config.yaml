@@ -3,20 +3,16 @@
 z: 0
 
 m_min: 1e3
-N_m: 64 #power of 2
+N_m: 32 #power of 2
 
 M_min: 1e3
 M_max: 1e16
-N_M: 256 #power of 2
+N_M: 64 #power of 2
 
 k_min: 1e-1
 k_max: 1e4
-N_k: 64 #power of 2
+N_k: 32 #power of 2
 
-# Delta_vir: 340 #See figure 1 in eke et al. for some value of Omega_m
-# Delta_vir is 340 times the mean matter density so 340m
-
-massdef: "200c" # !! SHOULD LEAVE THIS BY DEFAULT ON 200m
 
 # config convergence power spectrum
 z_min: 0
@@ -42,10 +38,10 @@ cosmo_params:
 
 
 models:
-  gas_profile: gassiegel2025           # gassiegel2025 | gasdebackere2022
-  star_profile: starsiegel2025          # pointmass | starsiegel2025 
-  shmr: moster2013                 # moster2013 | niemiec2022
-  shmr_centrals: moster2013centrals # moster2013centrals
+  gas_profile: gasdebackere2022           # gassiegel2025 | gasdebackere2022
+  star_profile: pointmass         # pointmass | starsiegel2025 
+  shmr: moster2013                    # moster2013 | niemiec2022
+  shmr_centrals: moster2013centrals   # moster2013centrals
  
 
 params:
@@ -62,7 +58,7 @@ params:
       delta: 8
 
     gasdebackere2022:
-      gamma: 1.5         # 0 <= gamma <= 3
+      gamma: 3         # 0 <= gamma <= 3
       logM_t: 13.0       # turnover mass of f_gas,500c
       alpha_t: 0.5       # sharpness of the turnover
       rc_frac: 0.1       # core radius in units of r500c
@@ -72,7 +68,6 @@ params:
       r_star: 0.015 # radius of galaxies times r200
 
     
-
   shmr:
     moster2013:
     moster2013centrals:
@@ -95,7 +90,8 @@ alpha: 0
 logm0: 9
 beta: 0
 
+massdef: "200c" # !! SHOULD LEAVE THIS BY DEFAULT ON 200c
 
 # max number of processes
-processes: 1
+processes: 16
 

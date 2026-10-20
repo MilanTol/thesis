@@ -6,11 +6,14 @@ __all__ = ["Profile", "CompositeProfile"]
 
 
 class Profile(ABC):
+    def __init__(self, **kwargs):
+        return
+    
     @abstractmethod
     def _fourier(self, cosmo, k, M, z, **kwargs):
         """Implementation of the normalised Fourier-space profile."""
         pass
-
+    
     def fourier(self, cosmo, k, M, z, **kwargs):
         """Normalised Fourier transform of the profile.
 
