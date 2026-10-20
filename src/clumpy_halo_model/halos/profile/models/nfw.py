@@ -18,7 +18,7 @@ class ProfileNFW(Profile):
         self.c = c
         self.r_vir = r_vir
 
-        rmin, rmax, Nr = 1e-4, 1e3, 512
+        rmin, rmax, Nr = 1e-4, 5e3, 512
         M_grid = np.geomspace(cfg.M_min, cfg.M_max, cfg.N_M)
         k_grid = get_k_grid(rmin, rmax, Nr)
         fourier_grid = np.zeros((len(M_grid), len(k_grid)))
