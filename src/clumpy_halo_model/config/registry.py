@@ -8,7 +8,7 @@ from .params import *
 # profiles
 from ..halos.profile.profile import Profile
 from ..halos.profile.models.gas_cored_powerlaw import ProfileGasCoredPowerLaw
-from ..halos.profile.models.gas_debackere import ProfileGasDebackere
+from ..halos.profile.models.gas_debackere2022 import ProfileGasDebackere2022
 from ..halos.profile.models.pointmass import ProfilePointMass
 from ..halos.profile.models.stellar_truncated_powerlaw import ProfileStellarTruncatedPowerLaw
 
@@ -31,7 +31,7 @@ MODELS = {
     "profile": {
         "pointmass": (PointMass, ProfilePointMass),
         "gassiegel2025":    (GasSiegel2025, ProfileGasCoredPowerLaw),
-        "gasdebackere2022": (GasDebackere2022, ProfileGasDebackere),
+        "gasdebackere2022": (GasDebackere2022, ProfileGasDebackere2022),
         "starsiegel2025": (StarSiegel2025, ProfileStellarTruncatedPowerLaw)
     },
     "shmr": {

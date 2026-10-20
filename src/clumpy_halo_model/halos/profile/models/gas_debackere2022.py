@@ -13,7 +13,7 @@ import numpy as np
 from concurrent.futures import ThreadPoolExecutor
 
 
-class ProfileGasDebackere(Profile):
+class ProfileGasDebackere2022(Profile):
     """
     Hot gas profile as in Debackere et al. (eq. 14-15):
       - beta profile for r < r500c
@@ -98,7 +98,7 @@ class ProfileGasDebackere(Profile):
         # eq. 26: f_gas <= f_b - f_star,500c
         # ASSUMPTION: all stellar mass of the halo sits inside r500c
         # this is maybe not correct when clumps also contain stars?
-        f_star = self._shmr.shmr(self.cfg.cosmo, M_h, z) / M500  
+        f_star = self._shmr.shmr(self.cfg.cosmo, M_h, z)  
         return np.minimum(f_sig, np.maximum(f_b - f_star, 0.0))
 
     # ---------- normalisation (eq. 15) ----------
@@ -115,12 +115,13 @@ class ProfileGasDebackere(Profile):
             return 4 * np.pi * rho500 * r500**3 * np.log(r_hi / r_lo)
         return 4 * np.pi * rho500 * r500**gamma * (r_hi**(3 - gamma) - r_lo**(3 - gamma)) / (3 - gamma)
 
+
     def r_halo(self, M_h, M500, r500, r200m, rho500, gamma, z):
         """
         Radius where gas + stars = f_b * M_h.
         """
         f_b = self.cfg.cosmo.Ob(z) / self.cfg.cosmo.Om(z)
-        M_star = self._shmr.shmr(self.cfg.cosmo, M_h, z)  
+        M_star = M_h * self._shmr.shmr(self.cfg.cosmo, M_h, z)  
         M_gas_target = f_b * M_h - M_star
         m500 = self.f_gas_500(M500, M_h, z) * M500
         m200m = m500 + self._m_powerlaw(rho500, r500, gamma, r500, r200m)
@@ -139,21 +140,28 @@ class ProfileGasDebackere(Profile):
         arg = r500**(3 - gamma) + remaining * (3 - gamma) / (4 * np.pi * rho500 * r500**gamma)
         return arg**(1 / (3 - gamma))
 
+
     def real(self, cosmo, r, M, z):
         """
         hot gas density in real space (Msun / Mpc^3), M in cfg.massdef
         """
         r = np.atleast_1d(np.asarray(r, dtype=float))
-        gamma = self.p.gamma # 0 <= gamma <= 3
 
         M500 = self._convert(cosmo, M, z, "500c")
         M200m = self._convert(cosmo, M, z, "200m")
         r500 = self.R_delta(M500, 500, "c", z)
         r200m = self.R_delta(M200m, 200, "m", z)
-
+        
         rc = self.p.rc_frac*r500
         rho0 = self.rho_0(M500, r500, rc, self.p.beta, M, z)
         rho500 = rho0 * (1 + (r500 / rc)**2)**(-1.5 * self.p.beta)
+        
+        gamma_requested = self.p.gamma
+        gamma_min = self.gamma_min(
+            M, M500, r500, r200m, rho500, z
+        )
+        gamma = max(gamma_requested, gamma_min)
+        
         r_h = self.r_halo(M, M500, r500, r200m, rho500, gamma, z)
 
         inner = rho0 * (1 + (r / rc)**2)**(-1.5 * self.p.beta)
@@ -165,3 +173,87 @@ class ProfileGasDebackere(Profile):
             np.where(r < min(r200m, r_h), middle,
                      np.where(r < r_h, outer, 0.0))
         ) 
+    
+    # helper
+    def gamma_min(
+        self, M_h, M500, r500, r200m, rho500, z
+    ):
+        """
+        Minimum power-law slope required for the gas mass
+        within r200m not to exceed the available baryon budget.
+
+        Assumes the halo mass M_h and stellar mass are defined
+        consistently with the baryon-budget prescription.
+        """
+        f_b = self.cfg.cosmo.Ob(z) / self.cfg.cosmo.Om(z)
+
+        M_star = M_h*self._shmr.shmr(self.cfg.cosmo, M_h, z)
+        M_gas_target = f_b * M_h - M_star
+
+        M_gas_500 = self.f_gas_500(
+            M500, M_h, z
+        ) * M500
+
+        tol = 1e-10 * max(abs(M_gas_target), abs(M_gas_500), 1.0)
+
+        # The available gas budget must accommodate the gas
+        # already enclosed within r500.
+        if M_gas_target < M_gas_500 - tol:
+            raise ValueError(
+                "The gas mass inside r500 already exceeds the "
+                "available baryon budget. Check the mass "
+                "definitions, SHMR, and gas-fraction normalization."
+            )
+
+        def gas_mass_200(gamma):
+            return M_gas_500 + self._m_powerlaw(
+                rho500, r500, gamma, r500, r200m
+            )
+
+        # If gamma=0 is allowed, no additional constraint is needed.
+        if gas_mass_200(0.0) <= M_gas_target:
+            return 0.0
+
+        # If even gamma=3 fails, the problem cannot be solved
+        # by changing gamma alone.
+        M_gas_200_gamma3 = gas_mass_200(3.0)
+
+        # if M_gas_200_gamma3 > M_gas_target + tol:
+        #     print("\n--- gamma_min diagnostic ---")
+        #     print(f"M_h                 = {M_h:.6e}")
+        #     print(f"M500                = {M500:.6e}")
+        #     print(f"r500                = {r500:.6e}")
+        #     print(f"r200m               = {r200m:.6e}")
+        #     print(f"rho500              = {rho500:.6e}")
+        #     print(f"f_b                 = {f_b:.6e}")
+        #     print(f"M_star              = {M_star:.6e}")
+        #     print(f"M_gas_target        = {M_gas_target:.6e}")
+        #     print(f"M_gas_500            = {M_gas_500:.6e}")
+        #     print(f"M_gas_200_gamma0     = {gas_mass_200(0.0):.6e}")
+        #     print(f"M_gas_200_gamma3     = {M_gas_200_gamma3:.6e}")
+        #     print(f"gas_fraction_500     = {M_gas_500 / M500:.6e}")
+        #     print(
+        #         f"required_gamma3_ratio = "
+        #         f"{M_gas_200_gamma3 / M_gas_target:.6e}"
+        #         if M_gas_target > 0 else
+        #         "M_gas_target <= 0"
+        #     )
+        #     print("----------------------------\n")
+
+        #     raise ValueError(
+        #         "The gas mass exceeds the available baryon budget "
+        #         "even for gamma=3."
+        #     )
+
+        # Bisection: find the smallest gamma satisfying the constraint.
+        lo, hi = 0.0, 3.0
+
+        for _ in range(60):
+            mid = 0.5 * (lo + hi)
+
+            if gas_mass_200(mid) > M_gas_target:
+                lo = mid
+            else:
+                hi = mid
+
+        return hi    
