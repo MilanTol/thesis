@@ -85,7 +85,7 @@ class Ingredients:
 
     def nfw(self, concentration) -> ProfileNFW:
         """An NFW profile using the given concentration relation."""
-        return ProfileNFW(concentration, self.r_vir)
+        return ProfileNFW(cfg=self.cfg, c=concentration, r_vir=self.r_vir)
 
     @property
     def smooth_dm_profile(self) -> ProfileNFW:
