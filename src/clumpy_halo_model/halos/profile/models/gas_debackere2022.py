@@ -106,7 +106,7 @@ class ProfileGasDebackere2022(Profile):
         fgas = self.f_gas_500(M500, M_h, z)
         F = hyp2f1(1.5, 1.5 * beta, 2.5, -(r500 / rc)**2)
         return 500 * self._rho_ref(z, "c") * fgas / F
-
+    
     # ---------- gas mass enclosed in power-law / constant parts ----------
     @staticmethod
     def _m_powerlaw(rho500, r500, gamma, r_lo, r_hi):

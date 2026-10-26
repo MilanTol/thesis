@@ -38,7 +38,7 @@ cosmo_params:
 
 
 models:
-  gas_profile: gasdebackere2022          # gassiegel2025 | gasdebackere2022
+  gas_profile: gassiegel2025      # gassiegel2025 | gasdebackere2022
   star_profile: pointmass         # pointmass | starsiegel2025 
   shmr: moster2013                    # moster2013 | niemiec2022
   shmr_centrals: moster2013centrals   # moster2013centrals

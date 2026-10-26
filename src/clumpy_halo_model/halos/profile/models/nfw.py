@@ -54,8 +54,8 @@ class ProfileNFW(Profile):
         rel_r = r / r_s
         den = rel_r * (1 + rel_r) * (1 + rel_r)
     
-        return np.where(r > self.r_vir(cosmo, M, z), 0, num/den)
-
+        # return num/den 
+        return np.where(r > 5*self.r_vir(cosmo, M, z), 0, num/den)
 
     def _fourier(self, cosmo, k, M, z, **kwargs):
         # M_gaslimit is defined in cfg.massdef here, so no conversion is needed
