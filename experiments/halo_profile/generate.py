@@ -59,22 +59,39 @@ M = 1e14
 z = 0
 
 # compute contributions at a range of r values for smooth component:
-r = np.geomspace(1e-3, 1e2)
-dm_weight = smooth["weights"]["dm"](cfg.cosmo, M, z)
-dm_argweight = smooth["arg_weights"]["dm"](cfg.cosmo, M, z)
-dm = (
+r = np.geomspace(1e-8, 1e-1)
+dm_real = (
     smooth["weights"]["dm"](cfg.cosmo, M, z)
     * smooth["components"]["dm"].real(cfg.cosmo, r, smooth["arg_weights"]["dm"](cfg.cosmo, M, z), z)
 )
-stellar = (
+stellar_real = (
     smooth["weights"]["stellar"](cfg.cosmo, M, z)
     * smooth["components"]["stellar"].real(cfg.cosmo, r, smooth["arg_weights"]["stellar"](cfg.cosmo, M, z), z)    
 )
-gas = (
+gas_real = (
     smooth["weights"]["gas"](cfg.cosmo, M, z)
     * smooth["components"]["gas"].real(cfg.cosmo, r, smooth["arg_weights"]["gas"](cfg.cosmo, M, z), z)    
 )
 
+# compute contributions at a range of k values for smooth component:
+k = np.geomspace(1e-3, 1e4)
+dm_fourier = (
+    smooth["weights"]["dm"](cfg.cosmo, M, z)
+    * smooth["components"]["dm"].fourier(cfg.cosmo, k, smooth["arg_weights"]["dm"](cfg.cosmo, M, z), z)
+)
+stellar_fourier = (
+    smooth["weights"]["stellar"](cfg.cosmo, M, z)
+    * smooth["components"]["stellar"].fourier(cfg.cosmo, k, smooth["arg_weights"]["stellar"](cfg.cosmo, M, z), z)    
+)
+gas_fourier = (
+    smooth["weights"]["gas"](cfg.cosmo, M, z)
+    * smooth["components"]["gas"].fourier(cfg.cosmo, k, smooth["arg_weights"]["gas"](cfg.cosmo, M, z), z)    
+)
+
+
 # safe data 
 data_dir = root / "data/halo_profile"
-np.savez(data_dir / "contributions.npz", r=r, dm=dm, stellar=stellar, gas=gas) 
+np.savez(data_dir / "real.npz", r=r, dm=dm_real, stellar=stellar_real, gas=gas_real) 
+np.savez(data_dir / "fourier.npz", k=k, dm=dm_fourier, stellar=stellar_fourier, gas=gas_fourier) 
+
+

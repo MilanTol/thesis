@@ -18,28 +18,34 @@ data_dir = root / "data/halo_profile"
 
 
 # load in our data
-data = np.load(data_dir / "contributions.npz")
-r = data['r']
-dm = data['dm']
-stellar = data['stellar']
-gas = data['gas']
+real = np.load(data_dir / "real.npz")
+r = real['r']
+dm_real = real['dm']
+stellar_real = real['stellar']
+gas_real = real['gas']
 
-# plot
+fourier = np.load(data_dir / "fourier.npz")
+k = fourier['k']
+dm_fourier = fourier['dm']
+stellar_fourier = fourier['stellar']
+gas_fourier = fourier['gas']
+
+# plot real
 plt.figure(figsize=(8,6))
 
 plt.plot(r, 
-            dm, 
-            color='black',
-            label="dm"
-            )
+        dm_real, 
+        color='black',
+        label="dm"
+        )
 plt.plot(r,
-         stellar,
+         stellar_real,
          color='red',
          label='stellar',
          linestyle='--')
 
 plt.plot(r,
-         gas,
+         gas_real,
          color='blue',
          label='gas',
          linestyle=':')
@@ -51,6 +57,42 @@ plt.legend()
 plt.xscale("log")
 plt.yscale("log")
 
-plt.savefig(figures_dir / "smooth.pdf",
+plt.ylim(1e-3)
+
+plt.savefig(figures_dir / "real.pdf",
+            bbox_inches="tight")
+plt.close()
+
+
+# plot fourier
+plt.figure(figsize=(8,6))
+
+plt.plot(k, 
+        dm_fourier, 
+        color='black',
+        label="dm"
+        )
+plt.plot(k,
+         stellar_fourier,
+         color='red',
+         label='stellar',
+         linestyle='--')
+
+plt.plot(k,
+         gas_fourier,
+         color='blue',
+         label='gas',
+         linestyle=':')
+
+plt.xlabel('k [h/Mpc]')
+plt.ylabel(r'weighted normalized density')
+plt.legend()
+
+plt.xscale("log")
+plt.yscale("log")
+
+plt.ylim(1e-3)
+
+plt.savefig(figures_dir / "fourier.pdf",
             bbox_inches="tight")
 plt.close()
