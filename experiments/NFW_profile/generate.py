@@ -33,10 +33,12 @@ real = NFW.real(cfg.cosmo, r=r, M=M, z=z)
 
 k = np.geomspace(1e-3, 1e3, 100)
 fourier = NFW.fourier(cfg.cosmo, k=k, M=M, z=z)
+fourier_analytic = NFW.fourier_analytic(cfg.cosmo, k=k, M=M, z=z)
 
 # safe data 
 data_dir = root / "data/NFW_profile"
 np.savez(data_dir / "real.npz", r=r, real=real)
-np.savez(data_dir / "fourier.npz", k=k, fourier=fourier) 
+np.savez(data_dir / "fourier.npz", k=k, fourier=fourier, fourier_analytic=fourier_analytic) 
 
-
+print(f"fourier profile value at k = {k[0]:.2f} is {fourier[0]:.2f}")
+print(f"analytic fourier profile value at k = {k[0]:.2f} is {fourier_analytic[0]:.2f}")

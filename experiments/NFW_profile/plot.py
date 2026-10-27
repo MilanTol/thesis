@@ -25,6 +25,7 @@ real = data_real['real']
 data_fourier = np.load(data_dir / "fourier.npz")
 k = data_fourier['k']
 fourier = data_fourier['fourier']
+fourier_analytic = data_fourier['fourier_analytic']
 
 
 # plot real
@@ -49,6 +50,12 @@ plt.close()
 plt.plot(k, 
             fourier, 
             color='black',
+            label='numeric'
+            )
+plt.plot(k, 
+            fourier_analytic, 
+            color='red',
+            label='analytic'
             )
 
 plt.xlabel('k [h/Mpc]')
@@ -56,6 +63,8 @@ plt.ylabel(r'normalized density')
 
 plt.xscale("log")
 plt.yscale("log")
+
+plt.legend()
 
 plt.savefig(figures_dir / "fourier.pdf",
             bbox_inches="tight")
