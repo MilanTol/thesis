@@ -23,10 +23,7 @@ from .halos.concentration.models.neto2007 import ConcentrationNeto2007
 from .halos.concentration.models.scaled_clumps import ConcentrationScaledClumps
 from .halos.concentration.models.scaled_distribution import ConcentrationScaledDistribution
 
-from .halos.profile.models.gas_cored_powerlaw import ProfileGasCoredPowerLaw
 from .halos.profile.models.nfw import ProfileNFW
-from .halos.profile.models.stellar_truncated_powerlaw import (
-    ProfileStellarTruncatedPowerLaw)
 
 from .halos.profile.profile import CompositeProfile
 from .halos.profile.weights import (
@@ -34,9 +31,6 @@ from .halos.profile.weights import (
     SmoothDarkMatterWeight, SmoothMassWeight, Unity)
 
 from .halos.r_vir.models.SO import R_virSO
-
-from .halos.shmr.models.moster2013 import (
-    SHMRMoster2013, SHMRMoster2013Centrals)
 
 from .power_spectra.matter_power import MatterPower
 
