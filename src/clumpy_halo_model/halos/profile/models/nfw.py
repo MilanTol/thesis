@@ -54,10 +54,8 @@ class ProfileNFW(Profile):
         rel_r = r / r_s
         den = rel_r * (1 + rel_r) * (1 + rel_r)
     
-        # return num/den 
-        r_vir = self.r_vir(cosmo, M, z)
         res = np.where(r > self.r_vir(cosmo, M, z), 0, num/den)
-        return res
+        return num/den
 
     def _fourier(self, cosmo, k, M, z, **kwargs):
         return self.fourier_analytic(cosmo, k, M, z, **kwargs)
