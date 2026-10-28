@@ -59,8 +59,8 @@ params:
 
     gasdebackere2022:
       gamma: 3         # 0 <= gamma <= 3
-      logM_t: 13.0       # turnover mass of f_gas,500c
-      alpha_t: 0.5       # sharpness of the turnover
+      logM_t: 14      # turnover mass of f_gas,500c
+      alpha_t: 1.2      # sharpness of the turnover
       rc_frac: 0.21       # core radius in units of r500c
       beta: 0.71
     
