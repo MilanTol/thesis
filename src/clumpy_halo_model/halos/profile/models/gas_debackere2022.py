@@ -172,7 +172,7 @@ class ProfileGasDebackere2022(Profile):
             r < r500, inner,
             np.where(r < min(r200m, r_h), middle,
                      np.where(r < r_h, outer, 0.0))
-        ) 
+        ) / M
     
     # helper
     def gamma_min(

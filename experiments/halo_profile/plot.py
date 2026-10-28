@@ -31,7 +31,7 @@ stellar_fourier = fourier['stellar']
 gas_fourier = fourier['gas']
 
 # plot real
-plt.figure(figsize=(8,6))
+plt.figure(figsize=(5,6))
 
 plt.plot(r, 
         dm_real, 
@@ -51,13 +51,14 @@ plt.plot(r,
          linestyle=':')
 
 plt.xlabel('r [Mpc/h]')
-plt.ylabel(r'weighted normalized density')
+plt.ylabel(r'$\rho(r)/\rho_c$')
 plt.legend()
 
 plt.xscale("log")
 plt.yscale("log")
 
-plt.ylim(1e-3)
+plt.ylim(1e-2, 1e4)
+plt.xlim(1e-2, 1e1)
 
 plt.savefig(figures_dir / "real.pdf",
             bbox_inches="tight")
@@ -65,7 +66,7 @@ plt.close()
 
 
 # plot fourier
-plt.figure(figsize=(8,6))
+plt.figure(figsize=(5,6))
 
 plt.plot(k, 
         dm_fourier, 
@@ -85,13 +86,13 @@ plt.plot(k,
          linestyle=':')
 
 plt.xlabel('k [h/Mpc]')
-plt.ylabel(r'weighted normalized density')
+plt.ylabel(r'$\rho(k)/\rho_c$')
 plt.legend()
 
 plt.xscale("log")
 plt.yscale("log")
 
-plt.ylim(1e-3)
+plt.ylim(1e-3, None)
 
 plt.savefig(figures_dir / "fourier.pdf",
             bbox_inches="tight")
