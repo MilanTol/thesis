@@ -55,38 +55,42 @@ smooth = {
 }
 
 # set mass and redshift of some halo:
-M = 1e14
+M = 1e13
 z = 0
 
+# set reference density (critical density like in Debackere)
+rho_c = cfg.cosmo.rho_c(z) * 1e9 # convert to Mpc
+
 # compute contributions at a range of r values for smooth component:
-r = np.geomspace(1e-8, 1e-1)
+r = np.geomspace(1e-2, 1e1, 100)
 dm_real = (
     smooth["weights"]["dm"](cfg.cosmo, M, z)
-    * smooth["components"]["dm"].real(cfg.cosmo, r, smooth["arg_weights"]["dm"](cfg.cosmo, M, z), z)
-)
+    * smooth["components"]["dm"].real(cfg.cosmo, r, M*smooth["arg_weights"]["dm"](cfg.cosmo, M, z), z)
+) * M / rho_c
 stellar_real = (
     smooth["weights"]["stellar"](cfg.cosmo, M, z)
-    * smooth["components"]["stellar"].real(cfg.cosmo, r, smooth["arg_weights"]["stellar"](cfg.cosmo, M, z), z)    
-)
+    * smooth["components"]["stellar"].real(cfg.cosmo, r, M*smooth["arg_weights"]["stellar"](cfg.cosmo, M, z), z)    
+) * M / rho_c
 gas_real = (
     smooth["weights"]["gas"](cfg.cosmo, M, z)
-    * smooth["components"]["gas"].real(cfg.cosmo, r, smooth["arg_weights"]["gas"](cfg.cosmo, M, z), z)    
-)
+    * smooth["components"]["gas"].real(cfg.cosmo, r, M*smooth["arg_weights"]["gas"](cfg.cosmo, M, z), z)    
+) * M / rho_c
+
 
 # compute contributions at a range of k values for smooth component:
-k = np.geomspace(1e-3, 1e4)
+k = np.geomspace(1e-1, 1e4, 100)
 dm_fourier = (
     smooth["weights"]["dm"](cfg.cosmo, M, z)
-    * smooth["components"]["dm"].fourier(cfg.cosmo, k, smooth["arg_weights"]["dm"](cfg.cosmo, M, z), z)
-)
+    * smooth["components"]["dm"].fourier(cfg.cosmo, k, M*smooth["arg_weights"]["dm"](cfg.cosmo, M, z), z)
+) * M / rho_c
 stellar_fourier = (
     smooth["weights"]["stellar"](cfg.cosmo, M, z)
-    * smooth["components"]["stellar"].fourier(cfg.cosmo, k, smooth["arg_weights"]["stellar"](cfg.cosmo, M, z), z)    
-)
+    * smooth["components"]["stellar"].fourier(cfg.cosmo, k, M*smooth["arg_weights"]["stellar"](cfg.cosmo, M, z), z)    
+) * M / rho_c
 gas_fourier = (
     smooth["weights"]["gas"](cfg.cosmo, M, z)
-    * smooth["components"]["gas"].fourier(cfg.cosmo, k, smooth["arg_weights"]["gas"](cfg.cosmo, M, z), z)    
-)
+    * smooth["components"]["gas"].fourier(cfg.cosmo, k, M*smooth["arg_weights"]["gas"](cfg.cosmo, M, z), z)    
+) * M / rho_c
 
 
 # safe data 
