@@ -68,7 +68,11 @@ class Config:
 
     # --- models ---
     models: Mapping[str, str] # maps a component to a particular model: gas_profile -> Siegel2025
-    params: Mapping[str, Mapping[str, any]] # maps a component to a set of parameters stored in a dataclass (see parameters.py)
+    
+    # maps a component to a set of parameters stored in a dataclass (see params.py)
+    params: Mapping[str, Mapping[str, any]] # this is used for constructing the class
+    
+    built_params: Mapping[str, Mapping[str, any]] # this is used to read out parameters after the config has been built
     
     # --- gas ---
     logM_gaslimit: float
@@ -118,7 +122,7 @@ class Config:
                     built[component][name] = cls(**raw or {}) # pass empty dict if model contains no parameters          
             
         # the class is frozen, so a normal `self.params = built` would raise an error
-        object.__setattr__(self, "params", built)        
+        object.__setattr__(self, "built_params", built)        
                 
                
     def p(self, component: str) -> ModelParams:
@@ -127,7 +131,7 @@ class Config:
         Example:
             >>> cfg.p("gas_profile").gamma
         """
-        return self.params[component][self.models[component]]
+        return self.built_params[component][self.models[component]]
     
         
         
