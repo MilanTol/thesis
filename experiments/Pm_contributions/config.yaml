@@ -38,12 +38,12 @@ cosmo_params:
 
 
 models:
-  gas_profile: gassiegel2025          # gassiegel2025 | gasdebackere2022
-  star_profile: pointmass         # pointmass | starsiegel2025 
+  gas_profile: gasdebackere2022       # gassiegel2025 | gasdebackere2022
+  star_profile: pointmass             # pointmass | starsiegel2025 
   shmr: moster2013                    # moster2013 | niemiec2022
   shmr_centrals: moster2013centrals   # moster2013centrals
-  clump_distribution: nfw           # nfw 
-
+  clump_distribution: nfw             # nfw 
+ 
 
 params:
 
@@ -59,7 +59,7 @@ params:
       delta: 8
 
     gasdebackere2022:
-      gamma: 3         # 0 <= gamma <= 3
+      gamma: 0        # 0 <= gamma <= 3
       logM_t: 13.95    # turnover mass of f_gas,500c
       alpha_t: 1.3      # sharpness of the turnover
       rc_frac: 0.21       # core radius in units of r500c
@@ -68,12 +68,16 @@ params:
     starsiegel2025:
       r_star: 0.015 # radius of galaxies times r200
 
-    
+    nfw:
+      concentration: neto2007
+
   shmr:
     moster2013:
     moster2013centrals:
     niemiec2022:
   
+
+built_params: # keep this in but empty, its a placeholder
 
 logM_gaslimit: 10
 
@@ -89,7 +93,7 @@ alpha: 0
 
 #clump mass function parameters
 logm0: 9
-beta: 0
+beta: -1
 
 massdef: "200c" # !! SHOULD LEAVE THIS BY DEFAULT ON 200c
 

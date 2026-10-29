@@ -42,7 +42,7 @@ models:
   star_profile: pointmass             # pointmass | starsiegel2025 
   shmr: moster2013                    # moster2013 | niemiec2022
   shmr_centrals: moster2013centrals   # moster2013centrals
-  subhalo_distribution: nfw           # nfw 
+  clump_distribution: nfw           # nfw 
  
 
 params:
@@ -68,7 +68,10 @@ params:
     starsiegel2025:
       r_star: 0.015 # radius of galaxies times r200
 
-    
+    nfw:
+      concentration: neto2007
+
+      
   shmr:
     moster2013:
     moster2013centrals:
