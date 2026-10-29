@@ -11,6 +11,7 @@ from ..halos.profile.models.gas_cored_powerlaw import ProfileGasCoredPowerLaw
 from ..halos.profile.models.gas_debackere2022 import ProfileGasDebackere2022
 from ..halos.profile.models.pointmass import ProfilePointMass
 from ..halos.profile.models.stellar_truncated_powerlaw import ProfileStellarTruncatedPowerLaw
+from ..halos.profile.models.nfw import ProfileNFW
 
 # shmr
 from ..halos.shmr.shmr import SHMR
@@ -24,6 +25,7 @@ COMPONENTS = {
     "star_profile": "profile",
     "shmr": "shmr",
     "shmr_centrals": "shmr",
+    "clump_distribution": "profile",
 }
 
 # tells what models are available for each object
@@ -32,7 +34,8 @@ MODELS = {
         "pointmass": (PointMass, ProfilePointMass),
         "gassiegel2025":    (GasSiegel2025, ProfileGasCoredPowerLaw),
         "gasdebackere2022": (GasDebackere2022, ProfileGasDebackere2022),
-        "starsiegel2025": (StarSiegel2025, ProfileStellarTruncatedPowerLaw)
+        "starsiegel2025": (StarSiegel2025, ProfileStellarTruncatedPowerLaw),
+        "nfw": (NFW , ProfileNFW),
     },
     "shmr": {
         "moster2013": (Moster2013, SHMRMoster2013),

@@ -14,11 +14,14 @@ profile classes import Config.
 from dataclasses import dataclass
 
 __all__ = [
+    
     # Profiles
     "PointMass",
     "GasSiegel2025",
     "GasDebackere2022",
     "StarSiegel2025",
+    "NFW",
+    
     # SHMR
     "Moster2013",
     "Moster2013Centrals",
@@ -74,7 +77,12 @@ class StarSiegel2025(ModelParams):
     """truncated power law for stellar profiles
     """
     r_star: float
-
+    
+    
+@dataclass(frozen=True)
+class NFW(ModelParams):
+    """NFW profile"""
+    concentration: any
         
 ###
 # stellar halo mass relations (SHMR)
