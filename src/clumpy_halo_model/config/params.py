@@ -82,7 +82,6 @@ class StarSiegel2025(ModelParams):
 @dataclass(frozen=True)
 class NFW(ModelParams):
     """NFW profile"""
-    concentration: str
         
 ###
 # stellar halo mass relations (SHMR)

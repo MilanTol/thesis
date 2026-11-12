@@ -69,7 +69,6 @@ params:
       r_star: 0.015 # radius of galaxies times r200
 
     nfw:
-      concentration: neto2007
 
   shmr:
     moster2013:
@@ -93,7 +92,7 @@ alpha: 0
 
 #clump mass function parameters
 logm0: 9
-beta: -1
+beta: 0
 
 massdef: "200c" # !! SHOULD LEAVE THIS BY DEFAULT ON 200c
 

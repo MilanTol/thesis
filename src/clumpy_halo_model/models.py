@@ -25,7 +25,7 @@ from .halos.concentration.models.scaled_distribution import ConcentrationScaledD
 
 from .halos.profile.models.nfw import ProfileNFW
 
-from .halos.profile.profile import CompositeProfile
+from .halos.profile.profile import CompositeProfile, Profile
 from .halos.profile.weights import (
     CentralStarWeight, ClumpDarkMatterWeight, ClumpStarWeight, GasWeight,
     SmoothDarkMatterWeight, SmoothMassWeight, Unity)
@@ -92,9 +92,13 @@ class Ingredients:
         return self.nfw(self.concentration_clumps)
 
     @property
-    def clump_distribution(self) -> ProfileNFW:
+    def clump_distribution(self) -> Profile:
         """NFW profile for the spatial distribution of clumps within a halo."""
-        return self.nfw(self.concentration_distribution)
+        model = self.cfg.models['clump_distribution']
+        return MODELS['profile'][model][1](cfg=self.cfg, 
+                                           c=self.concentration_distribution, 
+                                           r_vir=self.r_vir,
+                                           )
 
 
 def dark_matter_only(cfg: Config) -> MatterPower:
