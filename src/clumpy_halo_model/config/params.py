@@ -82,6 +82,12 @@ class StarSiegel2025(ModelParams):
 @dataclass(frozen=True)
 class NFW(ModelParams):
     """NFW profile"""
+    
+    
+@dataclass(frozen=True)
+class Green2021(ModelParams):
+    """ Van den Bosch subhalo distribution.
+    Note that this profile is fitted from figure """
         
 ###
 # stellar halo mass relations (SHMR)

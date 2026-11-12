@@ -68,7 +68,13 @@ params:
     starsiegel2025:
       r_star: 0.015 # radius of galaxies times r200
 
-    
+    nfw: # uses a concentration of Neto (I believe)
+    # note that this is just used for subhalo distribution within the halo
+
+    green2021:
+
+
+
   shmr:
     moster2013:
     moster2013centrals:
