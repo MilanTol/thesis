@@ -69,7 +69,6 @@ params:
       r_star: 0.015 # radius of galaxies times r200
 
     nfw:
-      concentration: neto2007
 
       
   shmr:
@@ -90,7 +89,7 @@ D: 1
 
 # halo mass function parameters
 logM0: 9 
-alpha: 0
+alpha: -1
 
 #clump mass function parameters
 logm0: 9

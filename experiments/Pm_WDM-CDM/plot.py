@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt # pyright: ignore[reportMissingModuleSource]
 
 from pathlib import Path
@@ -18,20 +20,18 @@ figures_dir = root / "figures/Pm_WDM-CDM/"
 
 # load in data
 data_dir = root / "data/Pm_WDM-CDM/" 
-ratios = np.load(data_dir / "ratios.npz")
-k = ratios['k']
+ratios_dmo = np.load(data_dir / "ratios_dmo.npz")
+ratios_bar = np.load(data_dir / "ratios_bar.npz")
+k = ratios_dmo['k']
 
 
-plt.plot(k, ratios['ss'], label = r'$P_{1h,ss}$', linestyle='-')
-plt.plot(k, ratios['sc'], label = r'$P_{1h,sc}$', linestyle='--')
-plt.plot(k, ratios['self_c'], label = r'$P_{1h,\mathrm{self-}c}$', linestyle='-.')
-plt.plot(k, ratios['cc'], label = r'$P_{1h,cc}$', linestyle=':')
-plt.plot(k, ratios['tot'], label = r'$P_{tot}$', linestyle='-', color='black')
+plt.plot(k, ratios_dmo['tot'], label = r'$P_{\text{DMO}}$', linestyle='-', color='black')
+plt.plot(k, ratios_bar['tot'], label = r'$P_{\text{bar}}$', linestyle='--', color='red')
 
 plt.yscale('log')
 plt.xscale('log')
 
-plt.ylim(0.7, 1.2)
+plt.ylim(0.9, 1.01)
 plt.xlim(np.min(k), np.max(k))
 
 plt.xlabel(r'$k \; [h/\mathrm{Mpc}]$')
