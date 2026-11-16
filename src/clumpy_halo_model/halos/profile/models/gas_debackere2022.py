@@ -214,38 +214,7 @@ class ProfileGasDebackere2022(Profile):
         if gas_mass_200(0.0) <= M_gas_target:
             return 0.0
 
-        # If even gamma=3 fails, the problem cannot be solved
-        # by changing gamma alone.
-        M_gas_200_gamma3 = gas_mass_200(3.0)
 
-        # if M_gas_200_gamma3 > M_gas_target + tol:
-        #     print("\n--- gamma_min diagnostic ---")
-        #     print(f"M_h                 = {M_h:.6e}")
-        #     print(f"M500                = {M500:.6e}")
-        #     print(f"r500                = {r500:.6e}")
-        #     print(f"r200m               = {r200m:.6e}")
-        #     print(f"rho500              = {rho500:.6e}")
-        #     print(f"f_b                 = {f_b:.6e}")
-        #     print(f"M_star              = {M_star:.6e}")
-        #     print(f"M_gas_target        = {M_gas_target:.6e}")
-        #     print(f"M_gas_500            = {M_gas_500:.6e}")
-        #     print(f"M_gas_200_gamma0     = {gas_mass_200(0.0):.6e}")
-        #     print(f"M_gas_200_gamma3     = {M_gas_200_gamma3:.6e}")
-        #     print(f"gas_fraction_500     = {M_gas_500 / M500:.6e}")
-        #     print(
-        #         f"required_gamma3_ratio = "
-        #         f"{M_gas_200_gamma3 / M_gas_target:.6e}"
-        #         if M_gas_target > 0 else
-        #         "M_gas_target <= 0"
-        #     )
-        #     print("----------------------------\n")
-
-        #     raise ValueError(
-        #         "The gas mass exceeds the available baryon budget "
-        #         "even for gamma=3."
-        #     )
-
-        # Bisection: find the smallest gamma satisfying the constraint.
         lo, hi = 0.0, 3.0
 
         for _ in range(60):
