@@ -31,7 +31,7 @@ plt.plot(k, ratios['siegel'], label = r'$siegel$', linestyle='--', color='red')
 plt.yscale('log')
 plt.xscale('log')
 
-plt.ylim(0.7, 1.2)
+plt.ylim(0.85, 1.05)
 plt.xlim(np.min(k), np.max(k))
 
 plt.xlabel(r'$k \; [h/\mathrm{Mpc}]$')
