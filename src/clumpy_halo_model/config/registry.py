@@ -12,6 +12,7 @@ from ..halos.profile.models.gas_debackere2022 import ProfileGasDebackere2022
 from ..halos.profile.models.pointmass import ProfilePointMass
 from ..halos.profile.models.stellar_truncated_powerlaw import ProfileStellarTruncatedPowerLaw
 from ..halos.profile.models.nfw import ProfileNFW
+from ..halos.profile.models.clump_distribution_green2021 import ProfileGreen2021
 
 # shmr
 from ..halos.shmr.shmr import SHMR
@@ -29,6 +30,9 @@ COMPONENTS = {
 }
 
 # tells what models are available for each object
+# the first object in each tuple is the params object which holds all the 
+# relevant parameter values of the object
+# the second object is the actual object class inside src
 MODELS = {
     "profile": {
         "pointmass": (PointMass, ProfilePointMass),
@@ -36,6 +40,7 @@ MODELS = {
         "gasdebackere2022": (GasDebackere2022, ProfileGasDebackere2022),
         "starsiegel2025": (StarSiegel2025, ProfileStellarTruncatedPowerLaw),
         "nfw": (NFW , ProfileNFW),
+        "green2021": (Green2021, ProfileGreen2021),
     },
     "shmr": {
         "moster2013": (Moster2013, SHMRMoster2013),
