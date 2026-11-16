@@ -23,7 +23,6 @@ class ProfileGasDebackere2022(Profile):
     rho_0 is set by the observed gas fraction at r500c (eq. 15).
     r_h is the radius where the halo reaches the cosmic baryon fraction
     (gas + stars = f_b * M_h), which constrains gamma.
-    Returns the physical density (Msun / Mpc^3), not a proportional profile.
     """
 
     def __init__(self, cfg: Config, shmr: SHMR, c: Concentration):
