@@ -31,8 +31,9 @@ plt.plot(k, ratios['siegel'], label = r'$siegel$', linestyle='--', color='red')
 plt.yscale('log')
 plt.xscale('log')
 
-plt.ylim(0.85, 1.05)
-plt.xlim(np.min(k), np.max(k))
+plt.ylim(0.7, 1.1)
+plt.xlim(1e-1, 1e2)
+# plt.xlim(np.min(k), np.max(k))
 
 plt.xlabel(r'$k \; [h/\mathrm{Mpc}]$')
 plt.ylabel(r'$P_{wdm}(k) / P_{cdm}(k)$')
