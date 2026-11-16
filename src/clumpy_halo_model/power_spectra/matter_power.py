@@ -93,6 +93,7 @@ class MatterPower:
             return (
                 self.clump_mass_func(m, M)
                 * m * self.clump_profile.fourier(cfg.cosmo, k, m, cfg.z, M_parent=M)
+                * self.clump_distribution.fourier(cosmo=cfg.cosmo, k=k, M=M, z=cfg.z, m=m)
             )
         return 1/M * self._clump_integrator(integrand, cfg.m_min, M)
     
@@ -143,7 +144,6 @@ class MatterPower:
             return (
                 2 * self.mass_func(M, self.cfg.z)
                 * M * self.smooth_profile.fourier(self.cfg.cosmo, k, M, self.cfg.z)
-                * self.clump_distribution.fourier(self.cfg.cosmo, k, M, self.cfg.z)
                 * M * self.Ic(k, M)
             )
         return (
@@ -170,8 +170,6 @@ class MatterPower:
         def integrand(M):
             return (
                 self.mass_func(M, self.cfg.z)
-                * self.clump_distribution.fourier(self.cfg.cosmo, k, M, self.cfg.z)
-                * self.clump_distribution.fourier(self.cfg.cosmo, k, M, self.cfg.z)
                 * M * self.Ic(k, M)
                 * M * self.Ic(k, M)
             )
