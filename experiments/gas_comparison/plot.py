@@ -24,7 +24,7 @@ ratios = np.load(data_dir / "ratios.npz")
 k = ratios['k']
 
 plt.plot(k, ratios['dmo'], label=r'$dmo', linestyle='-', color='black')
-plt.plot(k, ratios['debackere'], label = r'$debackere$', linestyle=':', color='blue')
+plt.plot(k, ratios['debackere'], label = r'$debackere$', linestyle='-.', color='blue')
 plt.plot(k, ratios['siegel'], label = r'$siegel$', linestyle='--', color='red')
 
 
