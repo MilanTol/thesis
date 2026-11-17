@@ -79,7 +79,6 @@ class Config:
     
     # --- clump structure ---
     Q: float            # clump concentration scaling
-    D: float             # clump spatial-distribution concentration scaling
 
     # --- halo mass function modification: R(M) = (1 + M0/M)**alpha ---
     logM0: float 

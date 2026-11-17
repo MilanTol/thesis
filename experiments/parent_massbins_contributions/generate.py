@@ -15,9 +15,8 @@ root = Path(__file__).resolve().parents[2]
 cfg = Config.from_yaml(root/"experiments/parent_massbins_contributions/config.yaml")
 
 MASSBINS = [
-    [7, 8],
-    [8, 9],
-    [9, 10],
+    # [8, 9],
+    # [9, 10],
     [10, 11],
     [11, 12],
     [12, 13],
@@ -26,28 +25,30 @@ MASSBINS = [
 ]
 
 
+ratios: dict[str, float] = {}
+
 k = cfg.k_grid()
 POWER = with_baryons(cfg)
-P_1h = POWER.components(k)['P_1h']
+TOT = POWER.components(k)['P_tot']
 
 
 # for each massbin compute the power spectrum and save to data
 for massbin in MASSBINS:
     
-    M_min, M_max = massbin[0], massbin[1]
-    cfg.replace(M_min=M_min, M_max=M_max)
+    M_min, M_max = 10**massbin[0], 10**massbin[1]
+    cfg_bin = cfg.replace(M_min=M_min, M_max=M_max)
+    
+    print(np.log10(cfg_bin.M_min), np.log10(cfg_bin.M_max))
+
 
     # Construct a DMO power spectrum:
-    POWER_bin = with_baryons(cfg)
+    POWER_bin = with_baryons(cfg_bin)
 
     # extract values
-    k = cfg.k_grid()
     P_1h_bin = POWER_bin.components(k)['P_1h']
 
     # compute relative contributions of each term
-    ratios: dict[str, float] = {}
-    print(f'{massbin}')
-    ratios[f'{massbin}'] = P_1h_bin / P_1h
+    ratios[f'{massbin}'] = P_1h_bin / TOT
 
 
 # safe data

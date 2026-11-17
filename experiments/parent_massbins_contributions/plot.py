@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt # pyright: ignore[reportMissingModuleSource]
 
 from pathlib import Path
@@ -19,13 +21,13 @@ figures_dir = root / "figures/parent_massbins_contributions/"
 # load in data
 data_dir = root / "data/parent_massbins_contributions/" 
 ratios = np.load(data_dir / "ratios.npz")
+
 k = ratios['k']
 
 
 MASSBINS = [
-    [7, 8],
-    [8, 9],
-    [9, 10],
+    # [8, 9],
+    # [9, 10],
     [10, 11],
     [11, 12],
     [12, 13],
@@ -35,15 +37,14 @@ MASSBINS = [
 
 
 for massbin in MASSBINS:
+    print(f'{massbin}')
     plt.plot(k, ratios[f'{massbin}'], label=f'{massbin}')
     
-plt.show()
-
 plt.yscale('log')
 plt.xscale('log')
 
-plt.ylim(1e-3, None)
-plt.xlim(np.min(k), np.max(k))
+plt.ylim(1e-2, 2)
+plt.xlim(1e-1, 1e2)
 
 plt.xlabel(r'$k \; [h/\mathrm{Mpc}]$')
 plt.ylabel(r'$P_{m, i}(k) / P_m(k)$')
