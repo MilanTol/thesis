@@ -9,7 +9,9 @@ from clumpy_halo_model import Config
 from clumpy_halo_model.models import *
 
 from pathlib import Path
+
 root = Path(__file__).resolve().parents[2]
+data_dir = root/"data/parent_massbins_contributions" 
 
 # load config file
 cfg = Config.from_yaml(root/"experiments/parent_massbins_contributions/config.yaml")
@@ -37,9 +39,6 @@ for massbin in MASSBINS:
     
     M_min, M_max = 10**massbin[0], 10**massbin[1]
     cfg_bin = cfg.replace(M_min=M_min, M_max=M_max)
-    
-    print(np.log10(cfg_bin.M_min), np.log10(cfg_bin.M_max))
-
 
     # Construct a DMO power spectrum:
     POWER_bin = with_baryons(cfg_bin)
@@ -52,7 +51,6 @@ for massbin in MASSBINS:
 
 
 # safe data
-data_dir = root/"data/parent_massbins_contributions" 
 np.savez(data_dir / "ratios.npz", k=k, **ratios)
 
 
